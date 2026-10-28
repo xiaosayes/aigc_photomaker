@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="description" content="上传已获授权的单人脸照片，选择风格并生成 AI 艺术人像。">
+    <title>光影工坊 · AI 艺术人像</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#generator">跳到生成表单</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./" aria-label="光影工坊首页">
+          <span class="brand-mark" aria-hidden="true">光</span>
+          <span>光影工坊</span>
+        </a>
+        <span class="header-note">让每一种想象，都有你的模样</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">AIGC PHOTOMAKER</p>
+        <h1 id="page-title">一张照片，遇见另一种自己</h1>
+        <p class="hero-copy">上传清晰的单人脸照片，选择喜欢的艺术风格，由 AI 为你创作专属人像。</p>
+      </section>
+
+      <div class="workspace">
+        <form id="generator" class="panel generator-panel" novalidate>
+          <div class="section-heading">
+            <span class="step-number" aria-hidden="true">01</span>
+            <div>
+              <h2>创建你的作品</h2>
+              <p>填写生成设置，其余步骤交给我们。</p>
+            </div>
+          </div>
+
+          <div class="field api-field">
+            <label for="api-key">API Key</label>
+            <input id="api-key" name="api-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="请输入访问密钥" aria-describedby="api-key-help">
+            <p id="api-key-help" class="field-help">密钥仅保存在当前标签页的会话存储中，刷新后仍可使用，关闭标签页后由浏览器清除；不会写入网址。</p>
+          </div>
+
+          <fieldset class="field upload-field">
+            <legend>上传人像</legend>
+            <input id="file-input" class="visually-hidden" name="file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="upload-rules file-error">
+            <label id="drop-zone" class="drop-zone" for="file-input">
+              <span class="upload-icon" aria-hidden="true">↥</span>
+              <strong>拖放照片到这里，或点击选择</strong>
+              <span id="file-name">尚未选择照片</span>
+            </label>
+            <p id="upload-rules" class="field-help">仅支持 JPEG、PNG、WebP；单文件不超过 10 MiB。请使用清晰、无遮挡的<strong>单人脸</strong>照片，短边与长边均不小于 128 像素。</p>
+            <p id="file-error" class="field-error" role="alert"></p>
+            <div id="preview-container" class="preview-container" hidden>
+              <img id="preview-image" alt="待上传照片的预览">
+              <button id="remove-file" class="text-button" type="button">移除照片</button>
+            </div>
+          </fieldset>
+
+          <div class="notice" role="note">
+            <strong>人脸授权与隐私提示</strong>
+            <p>仅可上传本人或已获得明确授权的人脸照片，不得用于冒充、误导或侵害他人权益。照片将上传至当前服务用于生成，请避免上传含敏感信息的照片，并遵守服务的数据保留规则。</p>
+          </div>
+
+          <div class="settings-grid">
+            <div class="field">
+              <label for="style-select">艺术风格</label>
+              <select id="style-select" name="style" disabled aria-describedby="style-description">
+                <option value="">正在加载风格…</option>
+              </select>
+              <p id="style-description" class="field-help">风格说明将在加载后显示。</p>
+            </div>
+
+            <fieldset class="field mode-field">
+              <legend>生成模式</legend>
+              <div class="mode-options">
+                <div class="mode-option">
+                  <input id="mode-standard" name="mode" type="radio" value="standard" checked>
+                  <label for="mode-standard"><strong>Standard</strong><span>质量优先 · 更细致的画面与质感</span></label>
+                </div>
+                <div class="mode-option">
+                  <input id="mode-turbo" name="mode" type="radio" value="turbo">
+                  <label for="mode-turbo"><strong>Turbo</strong><span>速度优先 · 更快获得生成结果</span></label>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="field seed-field">
+              <label for="seed-input">随机种子 <span class="optional">（可选）</span></label>
+              <input id="seed-input" name="seed" type="number" min="0" max="9007199254740991" step="1" inputmode="numeric" placeholder="留空则随机生成" aria-describedby="seed-help">
+              <p id="seed-help" class="field-help">输入 0 至 2<sup>53</sup>−1 的整数。相同设置与种子便于复现结果。</p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="generate-button" class="primary-button" type="submit" disabled>开始生成</button>
+            <button id="cancel-button" class="secondary-button" type="button" disabled>取消当前任务</button>
+            <button id="refresh-button" class="text-button" type="button" hidden>查询当前任务</button>
+          </div>
+          <p id="form-error" class="form-error" role="alert" aria-atomic="true"></p>
+        </form>
+
+        <aside class="panel status-panel" aria-labelledby="status-title">
+          <div class="section-heading compact">
+            <span class="step-number" aria-hidden="true">02</span>
+            <div>
+              <h2 id="status-title">生成进度</h2>
+              <p>任务状态来自服务器实时反馈。</p>
+            </div>
+          </div>
+          <div class="progress-block">
+            <div class="progress-labels">
+              <span id="stage-text">等待上传照片</span>
+              <span id="progress-value"></span>
+            </div>
+            <progress id="progress" max="100" value="0" aria-label="任务生成进度">0%</progress>
+            <p id="task-status" class="task-status" role="status" aria-live="polite" aria-atomic="true">完成设置后即可开始生成。</p>
+            <p id="task-id" class="task-id"></p>
+          </div>
+
+          <section id="result-section" class="result-section" aria-labelledby="result-title" hidden>
+            <h3 id="result-title">你的专属人像</h3>
+            <div class="result-frame">
+              <img id="result-image" alt="AI 生成的艺术人像">
+            </div>
+            <a id="download-link" class="download-button" download="aigc-portrait.png">下载 PNG 图片</a>
+          </section>
+
+          <div class="patience-note">
+            <strong>关于等待与取消</strong>
+            <p>生成期间每 500 毫秒更新一次进度。等待达到 120 秒时，页面会停止自动刷新并提示你手动查询；这不代表后台任务已停止或取消。</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer>
+      <p>请负责任地使用 AI 生成内容，并尊重肖像权、隐私与授权边界。</p>
+    </footer>
+  </body>
+</html>

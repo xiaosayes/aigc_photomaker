@@ -1,0 +1,15 @@
+[Unit]
+Description=AIGC PhotoMaker (ComfyUI, Worker, and API)
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=%h/aigc-photomaker
+ExecStart=%h/aigc-photomaker/scripts/start.sh
+ExecStop=%h/aigc-photomaker/scripts/stop.sh
+TimeoutStartSec=0
+TimeoutStopSec=120
+
+[Install]
+WantedBy=default.target

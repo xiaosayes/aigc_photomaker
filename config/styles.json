@@ -1,0 +1,34 @@
+{
+  "cyberpunk": {
+    "label": "赛博朋克",
+    "description": "高对比霓虹、雨夜反射与未来都市构成的赛博朋克人像",
+    "positive": "solo, one person, single subject, cyberpunk style cinematic portrait of a person, neon-lit futuristic street at night, electric cyan and magenta rim lighting, illuminated high-tech jacket with subtle glowing circuit details, rain-soaked pavement, holographic signs, realistic skin, cinematic contrast",
+    "negative": "low quality, face asymmetry, deformed eyes, bad anatomy, extra fingers, watermark, text, logo, multiple people, two people, twins, duplicate person, extra face, daylight, historical clothing, painterly brushwork, anime, cartoon, ink wash, oil painting, robot, android, mechanical face",
+    "lora_filename": "lah-cyberpunk-sdxl.safetensors",
+    "lora_strength": 1.0
+  },
+  "anime": {
+    "label": "动漫",
+    "description": "清晰线稿、赛璐璐上色与鲜明色彩构成的二维动漫插画",
+    "positive": "solo, one person, single subject, 2D anime illustration of a person, clean expressive line art, cel shading, flat color layers, luminous anime eyes, crisp contours, vibrant color palette, polished Japanese animation key visual, detailed background",
+    "negative": "low quality, face asymmetry, deformed eyes, bad anatomy, extra fingers, watermark, text, logo, multiple people, two people, twins, duplicate person, extra face, photorealistic, live action, 3D render, oil painting, ink wash, realistic skin texture",
+    "lora_filename": "anime-sdxl.safetensors",
+    "lora_strength": 2.0
+  },
+  "ink_wash": {
+    "label": "水墨",
+    "description": "宣纸留白、黑白墨色与流动笔触构成的中国水墨人像",
+    "positive": "solo, one person, single subject, Chinese Ink portrait of a person, traditional shuimo on raw rice paper, expressive black calligraphic brush strokes, translucent grayscale ink washes, large negative space, spontaneous xieyi composition, subtle ink bleeding",
+    "negative": "low quality, face asymmetry, deformed eyes, bad anatomy, extra fingers, watermark, text, logo, multiple people, two people, twins, duplicate person, extra face, neon colors, vibrant colors, photorealistic, 3D render, heavy oil paint, anime, flat digital art",
+    "lora_filename": "chinese-ink-sdxl.safetensors",
+    "lora_strength": 0.8
+  },
+  "oil_painting": {
+    "label": "油画",
+    "description": "厚涂颜料、画布纹理与古典明暗光线构成的油画人像",
+    "positive": "solo, one person, single subject, classical oil painting portrait of a person, thick impasto paint, visible palette-knife and bristle brush strokes, woven canvas texture, rich layered pigments, Rembrandt chiaroscuro lighting, museum fine art",
+    "negative": "low quality, face asymmetry, deformed eyes, bad anatomy, extra fingers, watermark, text, logo, multiple people, two people, twins, duplicate person, extra face, photorealistic, anime, cartoon, flat digital art, neon lighting, ink wash, 3D render",
+    "lora_filename": "oil-painting-sdxl.safetensors",
+    "lora_strength": 2.0
+  }
+}

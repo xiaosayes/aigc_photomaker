@@ -1,0 +1,12 @@
+.worktrees/
+.env
+.env.*
+!.env.example
+.runtime/
+data/
+offline/
+reports/
+__pycache__/
+*.py[cod]
+*.zip
+.pytest_cache/

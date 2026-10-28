@@ -1,0 +1,65 @@
+# AIGC PhotoMaker consolidated online requirements (Python 3.11)
+#
+# Recommended preparation for InsightFace source builds:
+#   python -m pip install --upgrade pip setuptools wheel numpy==1.26.4 Cython==3.0.12 build
+# Then install everything:
+#   PIP_NO_BUILD_ISOLATION=1 python -m pip install -r requirements.txt
+#
+# Replace --index-url with your accessible PyPI mirror when needed.
+
+--index-url https://pypi.org/simple
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+# PyTorch and ComfyUI v0.42.1 core dependencies
+torch==2.9.1
+torchvision==0.24.1
+torchsde
+comfyui-frontend-package==1.55.18
+comfyui-workflow-templates==0.11.89
+comfyui-embedded-docs==0.5.14
+einops
+transformers>=4.50.3
+tokenizers>=0.13.3
+sentencepiece
+safetensors>=0.4.2
+aiohttp>=3.11.8
+yarl>=1.18.0
+pyyaml
+scipy
+tqdm
+psutil
+alembic
+filelock
+av>=17.0.0
+comfy-kitchen==0.2.39
+comfy-aimdo==0.5.6
+requests
+simpleeval>=1.0.0
+blake3
+kornia>=0.7.1
+spandrel
+PyOpenGL>=3.1.8
+comfy-angle
+
+# FastAPI application and task/ComfyUI integration
+fastapi==0.115.12
+uvicorn==0.34.2
+python-multipart==0.0.20
+pydantic==2.11.4
+pydantic-settings==2.9.1
+SQLAlchemy==2.0.40
+httpx==0.28.1
+Pillow==11.2.1
+websocket-client==1.8.0
+python-json-logger==3.3.0
+pytest==8.3.5
+
+# NumPy-compatible shared dependency constraints
+numpy==1.26.4
+
+# PhotoMaker V2 / InsightFace
+build
+Cython==3.0.12
+onnx==1.17.0
+insightface==0.7.3
+onnxruntime-gpu==1.20.2

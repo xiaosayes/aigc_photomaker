@@ -1,0 +1,1 @@
+"""AIGC PhotoMaker application package."""

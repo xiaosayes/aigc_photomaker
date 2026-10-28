@@ -1,0 +1,144 @@
+{
+  "models": [
+    {
+      "key": "realvisxl_v5",
+      "required": false,
+      "repo": "SG161222/RealVisXL_V5.0",
+      "revision": "ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc",
+      "filename": "RealVisXL_V5.0_fp16.safetensors",
+      "relative_path": "checkpoints/RealVisXL_V5.0_fp16.safetensors",
+      "size": 6938065488,
+      "sha256": "6a35a7855770ae9820a3c931d4964c3817b6d9e3c6f9c4dabb5b3a94e5643b80"
+    },
+    {
+      "key": "photomaker_v2",
+      "required": false,
+      "repo": "TencentARC/PhotoMaker-V2",
+      "revision": "f5a1e5155dc02166253fa7e29d13519f5ba22eac",
+      "filename": "photomaker-v2.bin",
+      "relative_path": "photomaker/photomaker-v2.bin",
+      "size": 1799993138,
+      "sha256": "0eeac57d7e09b95cee670a18e0d939ff303dd6f76d317c950bf584c6c9bdb8f5"
+    },
+    {
+      "key": "lcm_lora_sdxl",
+      "required": true,
+      "repo": "latent-consistency/lcm-lora-sdxl",
+      "revision": "a18548dd4956b174ec5b0d78d340c8dae0a129cd",
+      "filename": "pytorch_lora_weights.safetensors",
+      "relative_path": "loras/lcm-lora-sdxl.safetensors",
+      "size": 393855224,
+      "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141"
+    },
+    {
+      "key": "face_detection",
+      "required": false,
+      "repo": "immich-app/buffalo_l",
+      "revision": "d09715916a0778919a770c343533641e250b8699",
+      "filename": "detection/model.onnx",
+      "relative_path": "insightface/models/buffalo_l/det_10g.onnx",
+      "size": 16923827,
+      "sha256": "5838f7fe053675b1c7a08b633df49e7af5495cee0493c7dcf6697200b85b5b91"
+    },
+    {
+      "key": "face_recognition",
+      "required": false,
+      "repo": "immich-app/buffalo_l",
+      "revision": "d09715916a0778919a770c343533641e250b8699",
+      "filename": "recognition/model.onnx",
+      "relative_path": "insightface/models/buffalo_l/w600k_r50.onnx",
+      "size": 174383860,
+      "sha256": "4c06341c33c2ca1f86781dab0e829f88ad5b64be9fba56e56bc9ebdefc619e43"
+    },
+    {
+      "key": "cyberpunk_lora",
+      "required": true,
+      "repo": "Muapi/lah-cyberpunk-sdxl",
+      "revision": "6335ec687b4810052a58b5c1a5d67af06d5406f9",
+      "filename": "lah-cyberpunk-sdxl.safetensors",
+      "relative_path": "loras/lah-cyberpunk-sdxl.safetensors",
+      "size": 170544956,
+      "sha256": "17c7200db4a88b879e0dc850c13c0281b8fe8f2fffb11df1a8c3d697cbb1b103"
+    },
+    {
+      "key": "anime_lora",
+      "required": true,
+      "repo": "ntc-ai/SDXL-LoRA-slider.anime",
+      "revision": "3b21c1f0714401442d852804753d900b710c5f61",
+      "filename": "anime.safetensors",
+      "relative_path": "loras/anime-sdxl.safetensors",
+      "size": 8789076,
+      "sha256": "996f4ac936d328c0db1c8c43abe6e1b1ae92c61416fd5df5d6d3787c3e5ccf7b"
+    },
+    {
+      "key": "ink_wash_lora",
+      "required": true,
+      "repo": "ming-yang/sdxl_chinese_ink_lora",
+      "revision": "7818c40452204551120acd6ca1f5916f6709de26",
+      "filename": "Chinese_Ink_Painting_Lora_SDXL.safetensors",
+      "relative_path": "loras/chinese-ink-sdxl.safetensors",
+      "size": 57428460,
+      "sha256": "79d5a46e204b08179217622703e93342249298318d2bc9a80bc2ae02e9bee229"
+    },
+    {
+      "key": "oil_painting_lora",
+      "required": true,
+      "repo": "ntc-ai/SDXL-LoRA-slider.oil-painting",
+      "revision": "ff476eb5e9e60d0b26695318c2eedecb16f64ec9",
+      "filename": "oil painting.safetensors",
+      "relative_path": "loras/oil-painting-sdxl.safetensors",
+      "size": 8789076,
+      "sha256": "76939f71a95487755ef3eca62f82e7156bca8b682fc054d978d56d8f47bf4368"
+    },
+    {
+      "key": "instantid_ip_adapter",
+      "required": true,
+      "repo": "InstantX/InstantID",
+      "revision": "57b32dfee076092ad2930c71fd6d439c2c3b1820",
+      "filename": "ip-adapter.bin",
+      "relative_path": "instantid/ip-adapter.bin",
+      "size": 1691134141,
+      "sha256": "02b3618e36d803784166660520098089a81388e61a93ef8002aa79a5b1c546e1"
+    },
+    {
+      "key": "instantid_controlnet",
+      "required": true,
+      "repo": "InstantX/InstantID",
+      "revision": "57b32dfee076092ad2930c71fd6d439c2c3b1820",
+      "filename": "ControlNetModel/diffusion_pytorch_model.safetensors",
+      "relative_path": "controlnet/instantid/diffusion_pytorch_model.safetensors",
+      "size": 2502139136,
+      "sha256": "c8127be9f174101ebdafee9964d856b49b634435cf6daa396d3f593cf0bbbb05"
+    },
+    {
+      "key": "antelopev2_archive",
+      "required": true,
+      "repo": "MonsterMMORPG/tools",
+      "revision": "2cc250d767e22019bef3ae1aefaa1ad8a73ef64c",
+      "filename": "antelopev2.zip",
+      "relative_path": "instantid/antelopev2.zip",
+      "size": 360662982,
+      "sha256": "8e182f14fc6e80b3bfa375b33eb6cff7ee05d8ef7633e738d1c89021dcf0c5c5"
+    },
+    {
+      "key": "realvisxl_v4",
+      "required": false,
+      "repo": "SG161222/RealVisXL_V4.0",
+      "revision": "26dfe44930964cd70d0a817b6d1cc945c130e38d",
+      "filename": "RealVisXL_V4.0.safetensors",
+      "relative_path": "checkpoints/RealVisXL_V4.0.safetensors",
+      "size": 6938040706,
+      "sha256": "912c9dc74f5855175c31a7993f863a043ac8dcc31732b324cd05d75cd7e16844"
+    },
+    {
+      "key": "sdxl_base_1_0",
+      "required": true,
+      "repo": "stabilityai/stable-diffusion-xl-base-1.0",
+      "revision": "462165984030d82259a11f4367a4eed129e94a7b",
+      "filename": "sd_xl_base_1.0.safetensors",
+      "relative_path": "checkpoints/sd_xl_base_1.0.safetensors",
+      "size": 6938078334,
+      "sha256": "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b"
+    }
+  ]
+}

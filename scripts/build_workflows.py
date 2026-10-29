@@ -14,12 +14,21 @@ from aigc_photomaker.workflow import build_workflow  # noqa: E402
 
 OUTPUT_TYPES = {
     "CheckpointLoaderSimple": ["MODEL", "CLIP", "VAE"],
-    "InstantIDModelLoader": ["INSTANTID"],
+    "UNETLoader": ["MODEL"],
+    "CLIPLoader": ["CLIP"],
+    "VAELoader": ["VAE"],
     "InstantIDFaceAnalysis": ["FACEANALYSIS"],
-    "ControlNetLoader": ["CONTROL_NET"],
-    "ApplyInstantID": ["MODEL", "CONDITIONING", "CONDITIONING"],
-    "InstantIDSingleFaceInputGuard": ["IMAGE"],
-    "InstantIDSingleFaceOutputGuard": ["IMAGE"],
+    "FluxSingleFaceInputGuard": ["IMAGE"],
+    "FluxSingleFaceOutputGuard": ["IMAGE"],
+    "EmptyFlux2LatentImage": ["LATENT"],
+    "SamplerCustomAdvanced": ["LATENT", "LATENT"],
+    "KSamplerSelect": ["SAMPLER"],
+    "Flux2Scheduler": ["SIGMAS"],
+    "CFGGuider": ["GUIDER"],
+    "RandomNoise": ["NOISE"],
+    "ImageScale": ["IMAGE"],
+    "VAEEncode": ["LATENT"],
+    "ReferenceLatent": ["CONDITIONING"],
     "LoadImage": ["IMAGE", "MASK"],
     "CLIPTextEncode": ["CONDITIONING"],
     "EmptyLatentImage": ["LATENT"],
@@ -46,6 +55,11 @@ POSITIONS = {
     14: [1540, 520],
     15: [1160, 500],
     16: [400, 520],
+    17: [1160, 40],
+    18: [400, 800],
+    19: [800, 800],
+    20: [800, 40],
+    21: [800, 440],
 }
 
 

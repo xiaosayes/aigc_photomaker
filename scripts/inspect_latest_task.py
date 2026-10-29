@@ -23,32 +23,40 @@ def prompt_graph(entry):
 
 
 def workflow_checks(graph):
-    style_node = graph.get("13", {})
-    sampler_model = graph.get("9", {}).get("inputs", {}).get("model")
-    instantid_model = graph.get("15", {}).get("inputs", {}).get("model")
-    turbo_model = graph.get("10", {}).get("inputs", {}).get("model")
-    style_applies = sampler_model == ["15", 0] and (
-        instantid_model == ["13", 0]
-        or (instantid_model == ["10", 0] and turbo_model == ["13", 0])
+    reference_chain_present = (
+        graph.get("19", {}).get("class_type") == "VAEEncode"
+        and graph.get("19", {}).get("inputs", {}).get("pixels") == ["16", 0]
+        and graph.get("19", {}).get("inputs", {}).get("vae") == ["3", 0]
+        and graph.get("20", {}).get("class_type") == "ReferenceLatent"
+        and graph.get("20", {}).get("inputs", {}).get("conditioning") == ["6", 0]
+        and graph.get("20", {}).get("inputs", {}).get("latent") == ["19", 0]
+        and graph.get("21", {}).get("class_type") == "ReferenceLatent"
+        and graph.get("21", {}).get("inputs", {}).get("conditioning") == ["7", 0]
+        and graph.get("21", {}).get("inputs", {}).get("latent") == ["19", 0]
+        and graph.get("15", {}).get("inputs", {}).get("positive") == ["20", 0]
+        and graph.get("15", {}).get("inputs", {}).get("negative") == ["21", 0]
+        and graph.get("16", {}).get("class_type") == "FluxSingleFaceInputGuard"
+        and graph.get("16", {}).get("inputs", {}).get("images") == ["18", 0]
+        and graph.get("16", {}).get("inputs", {}).get("faceanalysis") == ["4", 0]
     )
-    instantid_inputs = graph.get("15", {}).get("inputs", {})
-    input_guard_inputs = graph.get("16", {}).get("inputs", {})
-    identity_chain_present = (
-        graph.get("15", {}).get("class_type") == "ApplyInstantID"
-        and graph.get("16", {}).get("class_type") == "InstantIDSingleFaceInputGuard"
-        and instantid_inputs.get("instantid") == ["2", 0]
-        and instantid_inputs.get("insightface") == ["3", 0]
-        and instantid_inputs.get("control_net") == ["4", 0]
-        and instantid_inputs.get("image") == ["16", 0]
-        and input_guard_inputs.get("images") == ["5", 0]
-        and input_guard_inputs.get("faceanalysis") == ["3", 0]
+    samplers_present = (
+        graph.get("9", {}).get("class_type") == "SamplerCustomAdvanced"
+        and graph.get("9", {}).get("inputs", {}).get("guider") == ["15", 0]
+        and graph.get("9", {}).get("inputs", {}).get("sampler") == ["10", 0]
+        and graph.get("9", {}).get("inputs", {}).get("sigmas") == ["13", 0]
+        and graph.get("9", {}).get("inputs", {}).get("noise") == ["17", 0]
+        and graph.get("9", {}).get("inputs", {}).get("latent_image") == ["8", 0]
+        and graph.get("10", {}).get("class_type") == "KSamplerSelect"
+        and graph.get("13", {}).get("class_type") == "Flux2Scheduler"
+        and graph.get("17", {}).get("class_type") == "RandomNoise"
     )
     return {
-        "style_lora_present": style_node.get("class_type") == "LoraLoaderModelOnly",
-        "style_lora_applies_to_sampler": style_applies,
-        "instantid_identity_chain_present": identity_chain_present,
+        "flux2_reference_chain_present": reference_chain_present,
+        "flux2_samplers_present": samplers_present,
         "output_guard_present": (
-            graph.get("14", {}).get("class_type") == "InstantIDSingleFaceOutputGuard"
+            graph.get("14", {}).get("class_type") == "FluxSingleFaceOutputGuard"
+            and graph.get("14", {}).get("inputs", {}).get("images") == ["11", 0]
+            and graph.get("14", {}).get("inputs", {}).get("faceanalysis") == ["4", 0]
             and graph.get("12", {}).get("inputs", {}).get("images") == ["14", 0]
         ),
     }
@@ -106,7 +114,7 @@ def main(argv=None):
 
     print("\nWORKFLOW CHECKS:")
     print(json.dumps(workflow_checks(graph), ensure_ascii=False, indent=2))
-    for node_id in ("2", "3", "4", "6", "7", "9", "10", "13", "14", "15", "16"):
+    for node_id in tuple(str(index) for index in range(1, 22)):
         if node_id in graph:
             print(f"\nNODE {node_id}:")
             print(json.dumps(graph[node_id], ensure_ascii=False, indent=2))

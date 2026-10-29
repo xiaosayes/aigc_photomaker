@@ -3,8 +3,8 @@
 - 设计日期：2026-10-26
 - 项目代号：`aigc-photomaker`
 - 核心引擎：ComfyUI
-- 当前默认模型路线：官方 SDXL Base 1.0 + InstantID；RealVisXL + PhotoMaker 仅作可选回滚
-- 加速路线：Standard + LCM-LoRA SDXL Turbo
+- `feature/flux` 当前模型路线：FLUX.2 [klein] Base 4B FP8（Standard）/ Distilled 4B FP8（Turbo）+ 原生 ReferenceLatent；`main` 的 SDXL + InstantID 不被本分支修改
+- 加速路线：FLUX.2 [klein] Base + Distilled FP8 Turbo
 - 目标服务器：Ubuntu 22.04 x86_64、Conda、一张 RTX 3090 24GB
 - GPU 绑定：物理卡 1（第二张卡），通过 `CUDA_VISIBLE_DEVICES=1` 隔离
 - 设计状态：架构、模型方向、性能目标、安全与部署原则均已与需求方确认
@@ -19,7 +19,7 @@
 
 1. 用户可通过浏览器上传人物图片、选择风格及 Standard/Turbo 模式，并查看进度、预览和下载结果。
 2. 程序通过 ComfyUI HTTP API 提交真实工作流，不在 FastAPI 进程中加载生图模型。
-3. Standard/Turbo 工作流完整使用 InstantID IP-Adapter、antelopev2、关键点 ControlNet 和输入/输出单人脸守卫，不以残缺加载方式冒充完整实现。
+3. Standard/Turbo 工作流完整使用 FLUX.2 UNET、Qwen、VAE、原生 ReferenceLatent 和输入/输出单人脸守卫，不以残缺加载方式冒充完整实现。
 4. 正常单并发、无排队、服务已预热时，1024×1024 图片从点击生成到看到结果的目标为 30 秒以内。
 5. 一张 RTX 3090 24GB 支撑一个活跃生成任务，所有 GPU 进程只能看到物理卡 1。
 6. GitHub 不可直连时仍可部署，支持镜像和离线依赖包两种方式。
@@ -64,9 +64,10 @@
 
 | 组件 | 默认选择 | 作用 |
 | --- | --- | --- |
-| 基础生图模型 | `stabilityai/stable-diffusion-xl-base-1.0` | 与当前四风格 LoRA 的 SDXL 基座一致，降低写实先验限制 |
-| 身份保持 | `InstantX/InstantID` 的 IP-Adapter 与 ControlNet | 人脸身份条件、关键点与姿态控制 |
-| 人脸检测与特征 | InsightFace `antelopev2` | 检测人脸、提取关键点和身份 embedding，并执行输入/输出守卫 |
+| 基础生图模型 | `black-forest-labs/FLUX.2-klein-base-4b-fp8` 与 `FLUX.2-klein-4b-fp8` | Standard Base 与 Turbo Distilled 双权重路线 |
+| 身份与构图参考 | FLUX.2 原生 ReferenceLatent | 将上传照片的身份和构图信息接入正负条件 |
+| 文本与 VAE | Qwen3 4B 与 FLUX.2 VAE | 文本条件、参考图编码和结果解码 |
+| 人脸检测与特征 | InsightFace `antelopev2` | 仅执行输入/输出单人脸守卫 |
 | Turbo 加速 | `latent-consistency/lcm-lora-sdxl` | 将采样压缩到 8–12 步 |
 | 工作流引擎 | ComfyUI，固定不可变提交 | 模型加载、图执行、采样、VAE 解码和图片输出 |
 | InstantID 节点 | `cubiq/ComfyUI_InstantID`，固定不可变提交并保留 Apache-2.0 许可证 | 在 ComfyUI 中执行 InstantID 及单人脸守卫 |
@@ -119,8 +120,8 @@ FastAPI 应用
   │ 查询执行状态、下载结果、原子写回、记录指标和错误
   ▼
 ComfyUI 127.0.0.1:8188
-  ├── Standard：官方 SDXL Base 1.0 + InstantID + 风格 LoRA
-  └── Turbo：Standard + LCM-LoRA，低步数采样
+  ├── Standard：FLUX.2 Klein Base FP8 + ReferenceLatent
+  └── Turbo：FLUX.2 Klein Distilled FP8 + ReferenceLatent，低步数采样
   ▼
 物理 GPU 1（CUDA_VISIBLE_DEVICES=1，进程内显示为 cuda:0）
 ```
@@ -199,30 +200,34 @@ ComfyUI 127.0.0.1:8188
 
 ```text
 LoadImage
-  → antelopev2 人脸检测、身份特征与关键点提取
+  → ImageScale（1024×1024，center crop）
   → 输入单人脸守卫
-  → 正/负 Conditioning（普通 person，不使用 PhotoMaker 触发词）
+  → VAEEncode
+  → 正负 ReferenceLatent
 
-CheckpointLoaderSimple（官方 SDXL Base 1.0）
-  → 当前风格 LoRA
-  → InstantID IP-Adapter + 关键点 ControlNet
-  → KSampler
+UNETLoader（Standard Base FP8 / Turbo Distilled FP8）
+  → CFGGuider
+  → Flux2Scheduler + RandomNoise + KSamplerSelect
+  → SamplerCustomAdvanced
+  → VAEDecode
+  → 输出单人脸守卫
+  → SaveImage
 
-负向提示词 → CLIPTextEncode → KSampler
-EmptyLatentImage 1024×1024 → KSampler
-KSampler → VAEDecode → SaveImage
+负向提示词 → CLIPTextEncode → ReferenceLatent → CFGGuider
+EmptyFlux2LatentImage 1024×1024 → SamplerCustomAdvanced
+SamplerCustomAdvanced → VAEDecode → 输出单人脸守卫 → SaveImage
 ```
 
-节点必须覆盖模型、CLIP、VAE、InstantID IP-Adapter、antelopev2、ControlNet、输入/输出守卫、正负面条件、采样、解码和保存。应用只修改声明过的输入映射，不依赖节点界面坐标。
+节点必须覆盖 UNET、Qwen、VAE、ReferenceLatent、输入/输出守卫、正负面条件、Flux2Scheduler、RandomNoise、CFGGuider、SamplerCustomAdvanced、解码和保存。应用只修改声明过的输入映射，不依赖节点界面坐标。
 
 ### 7.2 Turbo
 
-Turbo 在 Standard 的身份链路基础上增加 LCM-LoRA，使用与 LCM 匹配的采样器、低 CFG 和 8–12 步。Turbo 是独立 JSON 和独立质量档位，不在 Standard 超时后静默替换，也不通过降低输出分辨率伪装加速。
+Turbo 使用独立的 Distilled FP8 权重，配合 Flux2Scheduler、euler 和 4 步低 CFG。Standard/Turbo 是独立 JSON 和独立质量档位，不在 Standard 超时后静默替换，也不通过降低输出分辨率伪装加速。
 
 ### 7.3 参数基线
 
-- Standard：1024×1024、batch 1、FP16、25 步起步，DPM++ 2M Karras，CFG 4.0 起步。
-- Turbo：1024×1024、batch 1、8–12 步、LCM 采样、低 CFG。
+- Standard：1024×1024、batch 1、Base FP8、20 步、CFG 4.0、euler。
+- Turbo：1024×1024、batch 1、Distilled FP8、4 步、CFG 1.0、euler。
 - 人脸 Provider：分别测试 CPU 与 CUDA；默认选择通过画质、时延和显存验收的配置。
 - 不启用 Refiner、Hires Fix、ControlNet、批量生成和 upscale。
 - 种子来自安全随机数或用户输入，并随任务保存以支持复现。
@@ -375,4 +380,4 @@ scripts/prepare_offline_bundle.sh  在联网 Ubuntu 机器制作离线包
 
 ## 16. 设计验收结论
 
-本设计将“效果与时延最优”解释为在 RTX 3090、24GB 显存、1024×1024 和无排队单并发条件下的综合最优，而非不计资源追求视觉上限。由于 RealVisXL + PhotoMaker 的四风格实测未达到要求，当前改为官方 SDXL Base + InstantID，并接受其额外 ControlNet/IP-Adapter 的成本。Standard/Turbo 的最终默认参数以真实服务器质量、P95 时延和峰值显存验收结果为准，不预设 InstantID 必然更好。
+本设计将“效果与时延最优”解释为在 RTX 3090、24GB 显存、1024×1024 和无排队单并发条件下的综合最优，而非不计资源追求视觉上限。由于旧路线的四风格实测未达到要求，`feature/flux` 改为 FLUX.2 Base/Distilled + 原生 ReferenceLatent。Standard/Turbo 的最终默认参数以真实服务器质量、P95 时延和峰值显存验收结果为准，不预设 FLUX.2 必然更好。

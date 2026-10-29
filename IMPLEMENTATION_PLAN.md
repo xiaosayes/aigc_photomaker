@@ -1,12 +1,12 @@
 # AIGC PhotoMaker Implementation Plan
 
-> **2026-10-28 当前路线修订**：默认工作流已直接替换为官方 SDXL Base 1.0 + InstantID + 风格 LoRA，使用 antelopev2、InstantID IP-Adapter/ControlNet 和输入/输出单人脸守卫。本文后续 PhotoMaker 任务与代码块属于历史实施记录，不得用来覆盖当前 `src/aigc_photomaker/workflow.py` 和 `config/models.lock.json`。当前精确实现以源码、工作流 JSON、COMFYUI_WORKFLOWS.md 和 DESIGN.md 为准。
+> **2026-10-29 feature/flux 路线修订**：当前分支改为 FLUX.2 Base/Distilled FP8 + 原生 ReferenceLatent，使用 Qwen、FLUX.2 VAE 和输入/输出单人脸守卫。本文后续 PhotoMaker/InstantID 任务与代码块属于历史实施记录，不得用来覆盖当前 `src/aigc_photomaker/workflow.py` 和 `config/models.lock.json`，也不得合入 `main`。当前精确实现以源码、工作流 JSON、COMFYUI_WORKFLOWS.md 和 DESIGN.md 为准。
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 交付一个可通过浏览器上传人物照片、调用真实 ComfyUI Standard/Turbo 工作流并在一台 RTX 3090 服务器上部署验收的完整项目及 ZIP。
 
-**Architecture:** FastAPI 负责鉴权、上传和任务 API，SQLite WAL 负责持久化，独立单并发 Worker 通过 ComfyUI HTTP/WebSocket API 编排生成。当前 ComfyUI 使用官方 SDXL Base 1.0 + InstantID + 风格 LoRA，Turbo 增加 LCM-LoRA；应用、Worker、ComfyUI 分进程运行，所有 GPU 进程只看到物理卡 1。
+**Architecture:** FastAPI 负责鉴权、上传和任务 API，SQLite WAL 负责持久化，独立单并发 Worker 通过 ComfyUI HTTP/WebSocket API 编排生成。当前 ComfyUI 使用 FLUX.2 Base/Distilled FP8 + 原生 ReferenceLatent，Standard/Turbo 分别选择对应权重；应用、Worker、ComfyUI 分进程运行，所有 GPU 进程只看到物理卡 1。
 
 **Tech Stack:** Python 3.11、FastAPI、Pydantic v2、SQLAlchemy 2、SQLite、HTTPX、Pillow、WebSocket、ComfyUI v0.42.1、PyTorch 2.9.1+cu126、InsightFace、原生 JavaScript/HTML/CSS、Shell、pytest。
 
@@ -19,8 +19,8 @@
 - GPU 固定为物理卡 1：`CUDA_VISIBLE_DEVICES=1`，进程内逻辑设备为 `cuda:0`。
 - ComfyUI 固定提交 `63be2f9b82ad0dac88a7ceaa28a9cf3154125a18`（v0.42.1）。
 - InstantID 节点固定提交 `72495e806bc2ab9c41581e15ccaa1bcf83c477e8`，修改后的完整源码和 Apache-2.0 许可证随包交付；历史 PhotoMaker Plus 仅用于回滚。
-- 当前默认模型为官方 SDXL Base 1.0、InstantID IP-Adapter/ControlNet、antelopev2、四个风格 LoRA 和 LCM-LoRA SDXL。
-- 输出固定为 1024×1024 PNG、batch 1；Standard 从 25 步开始，Turbo 从 8 步开始。
+- 当前默认模型为 FLUX.2 Base/Distilled FP8、Qwen3 文本编码器、FLUX.2 VAE 和 antelopev2。
+- 输出固定为 1024×1024 PNG、batch 1；Standard 从 20 步开始，Turbo 从 4 步开始。
 - 正常口径为服务完成预热、无排队、单并发，从点击到结果显示的端到端时延；Standard 验收目标为 P95 ≤ 30 秒。
 - 未取得服务器实测报告前，不得宣称 30 秒、显存或画质已经验收通过。
 - GitHub 不可直连时必须可用镜像或离线包；离线模式不得隐式联网下载模型。

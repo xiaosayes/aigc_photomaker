@@ -1,38 +1,41 @@
 {
   "1": {
-    "class_type": "CheckpointLoaderSimple",
+    "class_type": "UNETLoader",
     "inputs": {
-      "ckpt_name": "sd_xl_base_1.0.safetensors"
+      "unet_name": "flux-2-klein-4b-fp8.safetensors",
+      "weight_dtype": "default"
     },
     "_meta": {
-      "title": "CheckpointLoaderSimple"
+      "title": "UNETLoader"
     }
   },
   "2": {
-    "class_type": "InstantIDModelLoader",
+    "class_type": "CLIPLoader",
     "inputs": {
-      "instantid_file": "ip-adapter.bin"
+      "clip_name": "qwen_3_4b.safetensors",
+      "type": "flux2",
+      "device": "default"
     },
     "_meta": {
-      "title": "InstantIDModelLoader"
+      "title": "CLIPLoader"
     }
   },
   "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    },
+    "_meta": {
+      "title": "VAELoader"
+    }
+  },
+  "4": {
     "class_type": "InstantIDFaceAnalysis",
     "inputs": {
       "provider": "CPU"
     },
     "_meta": {
       "title": "InstantIDFaceAnalysis"
-    }
-  },
-  "4": {
-    "class_type": "ControlNetLoader",
-    "inputs": {
-      "control_net_name": "instantid/diffusion_pytorch_model.safetensors"
-    },
-    "_meta": {
-      "title": "ControlNetLoader"
     }
   },
   "5": {
@@ -48,10 +51,10 @@
     "class_type": "CLIPTextEncode",
     "inputs": {
       "clip": [
-        "1",
-        1
+        "2",
+        0
       ],
-      "text": "solo, one person, single subject, portrait of a person"
+      "text": "solo, one person, portrait of a person"
     },
     "_meta": {
       "title": "CLIPTextEncode"
@@ -61,54 +64,61 @@
     "class_type": "CLIPTextEncode",
     "inputs": {
       "clip": [
-        "1",
-        1
+        "2",
+        0
       ],
-      "text": "low quality, deformed face, multiple people, extra fingers, bad anatomy"
+      "text": "low quality, multiple people, extra face"
     },
     "_meta": {
       "title": "CLIPTextEncode"
     }
   },
   "8": {
-    "class_type": "EmptyLatentImage",
+    "class_type": "EmptyFlux2LatentImage",
     "inputs": {
       "width": 1024,
       "height": 1024,
       "batch_size": 1
     },
     "_meta": {
-      "title": "EmptyLatentImage"
+      "title": "EmptyFlux2LatentImage"
     }
   },
   "9": {
-    "class_type": "KSampler",
+    "class_type": "SamplerCustomAdvanced",
     "inputs": {
-      "model": [
+      "noise": [
+        "17",
+        0
+      ],
+      "guider": [
         "15",
         0
       ],
-      "positive": [
-        "15",
-        1
+      "sampler": [
+        "10",
+        0
       ],
-      "negative": [
-        "15",
-        2
+      "sigmas": [
+        "13",
+        0
       ],
       "latent_image": [
         "8",
         0
-      ],
-      "seed": 0,
-      "steps": 8,
-      "cfg": 1.8,
-      "sampler_name": "lcm",
-      "scheduler": "normal",
-      "denoise": 1.0
+      ]
     },
     "_meta": {
-      "title": "KSampler"
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "10": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "_meta": {
+      "title": "KSamplerSelect"
     }
   },
   "11": {
@@ -119,8 +129,8 @@
         0
       ],
       "vae": [
-        "1",
-        2
+        "3",
+        0
       ]
     },
     "_meta": {
@@ -141,102 +151,140 @@
     }
   },
   "13": {
-    "class_type": "LoraLoaderModelOnly",
+    "class_type": "Flux2Scheduler",
     "inputs": {
-      "model": [
-        "1",
-        0
-      ],
-      "lora_name": "lah-cyberpunk-sdxl.safetensors",
-      "strength_model": 1.0
+      "steps": 4,
+      "width": 1024,
+      "height": 1024
     },
     "_meta": {
-      "title": "LoraLoaderModelOnly"
+      "title": "Flux2Scheduler"
     }
   },
   "14": {
-    "class_type": "InstantIDSingleFaceOutputGuard",
+    "class_type": "FluxSingleFaceOutputGuard",
     "inputs": {
       "images": [
         "11",
         0
       ],
       "faceanalysis": [
-        "3",
+        "4",
         0
       ]
     },
     "_meta": {
-      "title": "InstantIDSingleFaceOutputGuard"
+      "title": "FluxSingleFaceOutputGuard"
     }
   },
   "15": {
-    "class_type": "ApplyInstantID",
+    "class_type": "CFGGuider",
     "inputs": {
-      "instantid": [
-        "2",
-        0
-      ],
-      "insightface": [
-        "3",
-        0
-      ],
-      "control_net": [
-        "4",
-        0
-      ],
-      "image": [
-        "16",
-        0
-      ],
       "model": [
-        "10",
+        "1",
         0
       ],
       "positive": [
-        "6",
+        "20",
         0
       ],
       "negative": [
-        "7",
+        "21",
         0
       ],
-      "weight": 0.8,
-      "start_at": 0.0,
-      "end_at": 1.0
+      "cfg": 1.0
     },
     "_meta": {
-      "title": "ApplyInstantID"
+      "title": "CFGGuider"
     }
   },
   "16": {
-    "class_type": "InstantIDSingleFaceInputGuard",
+    "class_type": "FluxSingleFaceInputGuard",
     "inputs": {
       "images": [
-        "5",
+        "18",
         0
       ],
       "faceanalysis": [
+        "4",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "FluxSingleFaceInputGuard"
+    }
+  },
+  "17": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 0
+    },
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "18": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "5",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "width": 1024,
+      "height": 1024,
+      "crop": "center"
+    },
+    "_meta": {
+      "title": "ImageScale"
+    }
+  },
+  "19": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "16",
+        0
+      ],
+      "vae": [
         "3",
         0
       ]
     },
     "_meta": {
-      "title": "InstantIDSingleFaceInputGuard"
+      "title": "VAEEncode"
     }
   },
-  "10": {
-    "class_type": "LoraLoaderModelOnly",
+  "20": {
+    "class_type": "ReferenceLatent",
     "inputs": {
-      "model": [
-        "13",
+      "conditioning": [
+        "6",
         0
       ],
-      "lora_name": "lcm-lora-sdxl.safetensors",
-      "strength_model": 1.0
+      "latent": [
+        "19",
+        0
+      ]
     },
     "_meta": {
-      "title": "LoraLoaderModelOnly"
+      "title": "ReferenceLatent"
+    }
+  },
+  "21": {
+    "class_type": "ReferenceLatent",
+    "inputs": {
+      "conditioning": [
+        "7",
+        0
+      ],
+      "latent": [
+        "19",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "ReferenceLatent"
     }
   }
 }

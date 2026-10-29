@@ -27,14 +27,15 @@ class Settings(BaseSettings):
     execution_timeout_seconds: int = 120
     retention_days: int = 7
     generation_rate_per_minute: int = 20
-    standard_steps: int = 25
+    standard_steps: int = 20
     standard_cfg: float = 4.0
-    standard_sampler: str = "dpmpp_2m"
-    standard_scheduler: str = "karras"
-    turbo_steps: int = 8
-    turbo_cfg: float = 1.8
-    checkpoint_filename: str = "sd_xl_base_1.0.safetensors"
-    instantid_weight: float = 0.8
+    standard_sampler: str = "euler"
+    turbo_steps: int = 4
+    turbo_cfg: float = 1.0
+    flux_base_unet_filename: str = "flux-2-klein-base-4b-fp8.safetensors"
+    flux_turbo_unet_filename: str = "flux-2-klein-4b-fp8.safetensors"
+    flux_text_encoder_filename: str = "qwen_3_4b.safetensors"
+    flux_vae_filename: str = "flux2-vae.safetensors"
     face_provider: str = "CPU"
 
     @field_validator("api_key")

@@ -59,9 +59,13 @@ class InstantIDSingleFaceOutputGuard(_SingleFaceGuard):
 NODE_CLASS_MAPPINGS = {
     "InstantIDSingleFaceInputGuard": InstantIDSingleFaceInputGuard,
     "InstantIDSingleFaceOutputGuard": InstantIDSingleFaceOutputGuard,
+    "FluxSingleFaceInputGuard": InstantIDSingleFaceInputGuard,
+    "FluxSingleFaceOutputGuard": InstantIDSingleFaceOutputGuard,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "InstantIDSingleFaceInputGuard": "InstantID Single Face Input Guard",
     "InstantIDSingleFaceOutputGuard": "InstantID Single Face Output Guard",
+    "FluxSingleFaceInputGuard": "Flux Single Face Input Guard",
+    "FluxSingleFaceOutputGuard": "Flux Single Face Output Guard",
 }

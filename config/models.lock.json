@@ -22,7 +22,7 @@
     },
     {
       "key": "lcm_lora_sdxl",
-      "required": true,
+      "required": false,
       "repo": "latent-consistency/lcm-lora-sdxl",
       "revision": "a18548dd4956b174ec5b0d78d340c8dae0a129cd",
       "filename": "pytorch_lora_weights.safetensors",
@@ -52,7 +52,7 @@
     },
     {
       "key": "cyberpunk_lora",
-      "required": true,
+      "required": false,
       "repo": "Muapi/lah-cyberpunk-sdxl",
       "revision": "6335ec687b4810052a58b5c1a5d67af06d5406f9",
       "filename": "lah-cyberpunk-sdxl.safetensors",
@@ -62,7 +62,7 @@
     },
     {
       "key": "anime_lora",
-      "required": true,
+      "required": false,
       "repo": "ntc-ai/SDXL-LoRA-slider.anime",
       "revision": "3b21c1f0714401442d852804753d900b710c5f61",
       "filename": "anime.safetensors",
@@ -72,7 +72,7 @@
     },
     {
       "key": "ink_wash_lora",
-      "required": true,
+      "required": false,
       "repo": "ming-yang/sdxl_chinese_ink_lora",
       "revision": "7818c40452204551120acd6ca1f5916f6709de26",
       "filename": "Chinese_Ink_Painting_Lora_SDXL.safetensors",
@@ -82,7 +82,7 @@
     },
     {
       "key": "oil_painting_lora",
-      "required": true,
+      "required": false,
       "repo": "ntc-ai/SDXL-LoRA-slider.oil-painting",
       "revision": "ff476eb5e9e60d0b26695318c2eedecb16f64ec9",
       "filename": "oil painting.safetensors",
@@ -92,7 +92,7 @@
     },
     {
       "key": "instantid_ip_adapter",
-      "required": true,
+      "required": false,
       "repo": "InstantX/InstantID",
       "revision": "57b32dfee076092ad2930c71fd6d439c2c3b1820",
       "filename": "ip-adapter.bin",
@@ -102,13 +102,53 @@
     },
     {
       "key": "instantid_controlnet",
-      "required": true,
+      "required": false,
       "repo": "InstantX/InstantID",
       "revision": "57b32dfee076092ad2930c71fd6d439c2c3b1820",
       "filename": "ControlNetModel/diffusion_pytorch_model.safetensors",
       "relative_path": "controlnet/instantid/diffusion_pytorch_model.safetensors",
       "size": 2502139136,
       "sha256": "c8127be9f174101ebdafee9964d856b49b634435cf6daa396d3f593cf0bbbb05"
+    },
+    {
+      "key": "flux2_klein_base_fp8",
+      "required": true,
+      "repo": "black-forest-labs/FLUX.2-klein-base-4b-fp8",
+      "revision": "103db268c10d4d3921101b46057671f9ac460da6",
+      "filename": "flux-2-klein-base-4b-fp8.safetensors",
+      "relative_path": "diffusion_models/flux-2-klein-base-4b-fp8.safetensors",
+      "size": 4089498488,
+      "sha256": "44bab3a86fe98b85d21dd2a4729ebdc3ae51fb8a39f76e457e18c724219e6840"
+    },
+    {
+      "key": "flux2_klein_turbo_fp8",
+      "required": true,
+      "repo": "black-forest-labs/FLUX.2-klein-4b-fp8",
+      "revision": "5b4408e59397a4a37ccb46afe426d8ed86379441",
+      "filename": "flux-2-klein-4b-fp8.safetensors",
+      "relative_path": "diffusion_models/flux-2-klein-4b-fp8.safetensors",
+      "size": 4070624520,
+      "sha256": "97ed34fe0567e436200f2faee3939b88f2b5d99f8af2a4dc16532c4245c0ccb6"
+    },
+    {
+      "key": "flux2_qwen_text_encoder",
+      "required": true,
+      "repo": "Comfy-Org/Flux-2-Klein-4B",
+      "revision": "5b3abca5c0dc1ecd4eaf3340868d09063fc1c965",
+      "filename": "split_files/text_encoders/qwen_3_4b.safetensors",
+      "relative_path": "text_encoders/qwen_3_4b.safetensors",
+      "size": 8044982048,
+      "sha256": "6c671498573ac2f7a5501502ccce8d2b08ea6ca2f661c458e708f36b36edfc5a"
+    },
+    {
+      "key": "flux2_vae",
+      "required": true,
+      "repo": "Comfy-Org/Flux-2-Klein-4B",
+      "revision": "5b3abca5c0dc1ecd4eaf3340868d09063fc1c965",
+      "filename": "split_files/vae/flux2-vae.safetensors",
+      "relative_path": "vae/flux2-vae.safetensors",
+      "size": 336211292,
+      "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
     },
     {
       "key": "antelopev2_archive",
@@ -132,7 +172,7 @@
     },
     {
       "key": "sdxl_base_1_0",
-      "required": true,
+      "required": false,
       "repo": "stabilityai/stable-diffusion-xl-base-1.0",
       "revision": "462165984030d82259a11f4367a4eed129e94a7b",
       "filename": "sd_xl_base_1.0.safetensors",

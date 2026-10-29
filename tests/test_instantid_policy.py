@@ -60,6 +60,23 @@ def test_registered_guards_convert_tensor_to_bgr_and_accept_one_face():
     assert analysis.images[0][0, 0, :].tolist() == [0, 0, 255]
 
 
+def test_flux_guard_names_are_registered_without_changing_behavior():
+    assert module.NODE_CLASS_MAPPINGS["FluxSingleFaceInputGuard"] is module.InstantIDSingleFaceInputGuard
+    assert module.NODE_CLASS_MAPPINGS["FluxSingleFaceOutputGuard"] is module.InstantIDSingleFaceOutputGuard
+    images = torch.zeros((1, 2, 2, 3), dtype=torch.float32)
+
+    class OneFaceAnalysis:
+        def __init__(self):
+            self.det_model = types.SimpleNamespace(input_size=None)
+
+        def get(self, image):
+            return [{"embedding": [0.1]}]
+
+    analysis = OneFaceAnalysis()
+    assert module.FluxSingleFaceInputGuard().validate_input(images, analysis)[0] is images
+    assert module.FluxSingleFaceOutputGuard().validate_output(images, analysis)[0] is images
+
+
 def test_analyze_faces_retries_until_a_face_is_found():
     face = {"embedding": [0.1]}
 

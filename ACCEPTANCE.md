@@ -47,7 +47,7 @@ bash scripts/smoke_test.sh
 
 - [ ] 单元和 Mock ComfyUI 集成测试退出码已记录，但未冒充真实 GPU 证据。
 - [ ] Standard 与 Turbo 均返回完整可解码的 1024×1024 RGB PNG。
-- [ ] 输入无脸纯色图和双人脸图分别返回结构化错误；输出无脸/多脸由 `InstantIDSingleFaceOutputGuard` 拒绝且不作为成功结果交付；无效图、超限图、非法风格/模式/参数均验证。
+- [ ] 输入无脸纯色图和双人脸图分别返回结构化错误；输出无脸/多脸由 `FluxSingleFaceOutputGuard` 拒绝且不作为成功结果交付；无效图、超限图、非法风格/模式/参数均验证。
 - [ ] 缺 Key/错 Key 为 401，限流生效，结果接口需要鉴权，日志无 Key。
 - [ ] 固定 seed 可复现；随机 seed 有记录；取消后任务可查询且状态终止。
 - [ ] 默认 `reports/smoke-<UTC时间>.json` 和 `.md` 路径已填写；报告的版本、参数、GPU 证据完整。
@@ -91,10 +91,10 @@ bash scripts/benchmark.sh --alternate-modes --runs 10 --base-seed 13000
 ## D. 人工画质与身份验收
 
 - [ ] 使用获授权的多张清晰单人照片，覆盖正脸/侧脸、不同肤色、年龄、眼镜和复杂背景；记录同意与数据保留方式。
-- [ ] 四种风格 × Standard/Turbo 使用相同输入和固定 seed 对照，样本清单可追溯；记录各风格 LoRA 文件、强度、revision/SHA256 和修改前后配对结果，不以单一 seed 代替多 seed 验证。
+- [ ] 四种风格 × Standard/Turbo 使用相同输入和固定 seed 对照，样本清单可追溯；记录各模式 FP8 权重、revision/SHA256、采样参数和修改前后配对结果，不以单一 seed 代替多 seed 验证。
 - [ ] 至少两名评审独立查看原图/结果，盲评身份相似度、五官完整、手部/边缘伪影、风格符合、细节和 1024×1024 完整性。
 - [ ] Turbo 与 Standard 的退化如实记录；时延快不自动等于画质通过。
-- [ ] 当前 SDXL Base + InstantID 与旧 RealVisXL + PhotoMaker 的回滚 A/B 使用相同输入和 seed；后续 checkpoint/身份权重调整一次只改一个变量，且重新预热。
+- [ ] `feature/flux` 的 FLUX.2 Base/Distilled 与 `main` 的 SDXL + InstantID 分开做同输入同 seed 对照；后续权重、步数或 CFG 调整一次只改一个变量，且重新预热。
 - [ ] 不以预热图一张好结果代表整体质量；失败、缺脸、多脸和敏感样本处理有记录。
 
 | 样本集/评审 | 身份（ rubric 待确认 ） | 风格 | 伪影 | 结论/证据 |

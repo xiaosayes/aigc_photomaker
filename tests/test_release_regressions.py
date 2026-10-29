@@ -31,8 +31,6 @@ STYLE = SimpleNamespace(
     key="portrait",
     positive="portrait of a person",
     negative="low quality",
-    lora_filename="lah-cyberpunk-sdxl.safetensors",
-    lora_strength=1.0,
 )
 
 

@@ -1,12 +1,12 @@
 # 六阶段路线
 
-当前基线已改为官方 SDXL Base 1.0 + InstantID + 风格 LoRA，保留输入/输出单人脸守卫、1024×1024、物理 GPU 1 和单活跃任务。后续阶段不得再按历史 PhotoMaker 描述覆盖当前工作流。所有阶段以 [DESIGN.md](DESIGN.md) 和 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) 为基线，先写测试，保留真实报告；静态检查不能替代服务器行为。先写测试，保留真实报告；静态检查不能替代服务器行为。任何未实测指标保持“待验收”。阶段顺序可因阻塞暂停，但不能用后续优化掩盖前阶段失败。
+`feature/flux` 当前基线为 FLUX.2 Base/Distilled FP8 + 原生 ReferenceLatent，保留输入/输出单人脸守卫、1024×1024、物理 GPU 1 和单活跃任务。`main` 的 SDXL + InstantID 保持不变，后续阶段不得跨分支覆盖。历史 PhotoMaker/InstantID 描述仅用于追溯。所有阶段以 [DESIGN.md](DESIGN.md) 和 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) 为基线，先写测试，保留真实报告；静态检查不能替代服务器行为。任何未实测指标保持“待验收”。阶段顺序可因阻塞暂停，但不能用后续优化掩盖前阶段失败。
 
 ## 阶段 1：服务器基线与模型验收
 
 - **目标**：在目标 Ubuntu/3090 服务器完成镜像安装、模型/hash/节点版本核验、双模式预热、API/浏览器基线和首次真实性能/画质记录。
 - **前置条件**：应用与测试代码齐备；GPU 1 空闲；获授权单人脸样本；API Key 私有；目标服务器可执行依赖/GPU 测试。
-- **执行项**：运行安装、启动、状态、完整测试、冒烟；核对官方 SDXL Base、InstantID IP-Adapter/ControlNet、antelopev2、风格 LoRA 和 LCM；Standard/Turbo 分开基准；人工检查四风格和身份；记录失败而不调参掩盖。
+- **执行项**：运行安装、启动、状态、完整测试、冒烟；核对 FLUX.2 Base/Distilled FP8、Qwen、FLUX.2 VAE、ReferenceLatent 和 antelopev2；Standard/Turbo 分开基准；人工检查四风格和身份；记录失败而不调参掩盖。
 - **输出**：安装/启动日志，测试退出码，`reports/` 冒烟和 benchmark JSON/Markdown，浏览器截图，模型版本清单，人工画质表及问题列表。
 - **退出条件**：功能证据完整；Standard 至少 20 成功、零失败、无 OOM、GPU 1 显存证据、热态 P95 ≤ 30 秒；Turbo 至少 10 成功且无失败/OOM；画质由评审签署。若未达到，只能以“基线未通过”结束并进入对应调优，不得宣称验收通过。
 - **回滚方式**：停止服务，恢复本阶段前的应用/配置快照和输入样本清单；保留失败报告。不得为回滚删除审计日志或修改锁文件伪造版本。
@@ -24,10 +24,10 @@
 
 - **目标**：降低 Turbo 热态时延，量化相对 Standard 的收益和身份/画质代价。
 - **前置条件**：阶段 1 Turbo 基线及同输入/seed 的 Standard 对照可复现；Standard 质量基线已冻结。
-- **执行项**：先写 Turbo 图和参数测试；围绕 LCM 步数/CFG 等小步实验，保持 lcm/normal、完整 InstantID 和 1024×1024；每次重新预热；Turbo 至少 10 次且建议扩大样本，并做交替模式测试和人工配对盲评。
+- **执行项**：先写 Turbo 图和参数测试；围绕 Distilled FP8 的步数/CFG 等小步实验，保持 Flux2Scheduler、euler、完整 ReferenceLatent 和 1024×1024；每次重新预热；Turbo 至少 10 次且建议扩大样本，并做双权重交替模式测试和人工配对盲评。
 - **输出**：Turbo/交替 JSON/Markdown、显存/OOM、画质对比、参数变更和采用/拒绝依据。
 - **退出条件**：零失败、无 OOM、真实 GPU 1 显存证据，时延相对基线有实测改善，画质/身份不低于事先确认的底线；不用交替报告替代 Standard 门槛，不给 Turbo 虚构 30 秒结果。
-- **回滚方式**：恢复 Turbo 8 步、CFG 1.8、LCM 节点连接及已验收 JSON，清除实验配置后重新预热复测；失败样本和日志保留。
+- **回滚方式**：恢复 Turbo 4 步、CFG 1.0、Distilled FP8 权重及已验收 JSON，清除实验配置后重新预热复测；失败样本和日志保留。
 
 ## 阶段 4：可靠性/安全加固
 

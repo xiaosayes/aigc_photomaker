@@ -43,8 +43,8 @@ DOC_REQUIRED_CONTENT = {
     ),
     "COMFYUI_WORKFLOWS.md": (
         "standard_api.json", "turbo_api.json", "standard_ui.json", "turbo_ui.json",
-        "ApplyInstantID", "InstantIDSingleFaceInputGuard", "InstantIDSingleFaceOutputGuard",
-        "ControlNetLoader", "LoraLoaderModelOnly", "/prompt", "/upload/image", "/history/",
+        "ReferenceLatent", "Flux2Scheduler", "CFGGuider", "FluxSingleFaceInputGuard",
+        "FluxSingleFaceOutputGuard", "/prompt", "/upload/image", "/history/",
     ),
     "ACCEPTANCE.md": ("静态检查", "服务器功能", "真实性能", "人工画质", "浏览器", "离线"),
     "ROADMAP.md": (

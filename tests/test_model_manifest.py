@@ -2,66 +2,71 @@ import json
 from pathlib import Path
 
 
-def test_manifest_has_verified_instantid_defaults():
-    models = json.loads(Path("config/models.lock.json").read_text(encoding="utf-8"))["models"]
-    defaults = {model["key"]: model for model in models if model["required"]}
+def load_models():
+    return json.loads(Path("config/models.lock.json").read_text(encoding="utf-8"))["models"]
+
+
+def test_manifest_has_verified_flux_defaults():
+    defaults = {model["key"]: model for model in load_models() if model["required"]}
     assert set(defaults) == {
-        "sdxl_base_1_0", "lcm_lora_sdxl", "cyberpunk_lora", "anime_lora",
-        "ink_wash_lora", "oil_painting_lora", "instantid_ip_adapter",
-        "instantid_controlnet", "antelopev2_archive",
+        "flux2_klein_base_fp8",
+        "flux2_klein_turbo_fp8",
+        "flux2_qwen_text_encoder",
+        "flux2_vae",
+        "antelopev2_archive",
     }
     assert all(len(model["sha256"]) == 64 and model["size"] > 0 for model in defaults.values())
 
     expected = {
-        "sdxl_base_1_0": (
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
-            "checkpoints/",
+        "flux2_klein_base_fp8": (
+            "black-forest-labs/FLUX.2-klein-base-4b-fp8",
+            "103db268c10d4d3921101b46057671f9ac460da6",
+            "flux-2-klein-base-4b-fp8.safetensors",
+            4089498488,
+            "44bab3a86fe98b85d21dd2a4729ebdc3ae51fb8a39f76e457e18c724219e6840",
+            "diffusion_models/",
         ),
-        "instantid_ip_adapter": (
-            "InstantX/InstantID",
-            "02b3618e36d803784166660520098089a81388e61a93ef8002aa79a5b1c546e1",
-            "instantid/",
+        "flux2_klein_turbo_fp8": (
+            "black-forest-labs/FLUX.2-klein-4b-fp8",
+            "5b4408e59397a4a37ccb46afe426d8ed86379441",
+            "flux-2-klein-4b-fp8.safetensors",
+            4070624520,
+            "97ed34fe0567e436200f2faee3939b88f2b5d99f8af2a4dc16532c4245c0ccb6",
+            "diffusion_models/",
         ),
-        "instantid_controlnet": (
-            "InstantX/InstantID",
-            "c8127be9f174101ebdafee9964d856b49b634435cf6daa396d3f593cf0bbbb05",
-            "controlnet/",
+        "flux2_qwen_text_encoder": (
+            "Comfy-Org/Flux-2-Klein-4B",
+            "5b3abca5c0dc1ecd4eaf3340868d09063fc1c965",
+            "split_files/text_encoders/qwen_3_4b.safetensors",
+            8044982048,
+            "6c671498573ac2f7a5501502ccce8d2b08ea6ca2f661c458e708f36b36edfc5a",
+            "text_encoders/",
         ),
-        "antelopev2_archive": (
-            "MonsterMMORPG/tools",
-            "8e182f14fc6e80b3bfa375b33eb6cff7ee05d8ef7633e738d1c89021dcf0c5c5",
-            "instantid/",
-        ),
-        "cyberpunk_lora": (
-            "Muapi/lah-cyberpunk-sdxl",
-            "17c7200db4a88b879e0dc850c13c0281b8fe8f2fffb11df1a8c3d697cbb1b103",
-            "loras/",
-        ),
-        "anime_lora": (
-            "ntc-ai/SDXL-LoRA-slider.anime",
-            "996f4ac936d328c0db1c8c43abe6e1b1ae92c61416fd5df5d6d3787c3e5ccf7b",
-            "loras/",
-        ),
-        "ink_wash_lora": (
-            "ming-yang/sdxl_chinese_ink_lora",
-            "79d5a46e204b08179217622703e93342249298318d2bc9a80bc2ae02e9bee229",
-            "loras/",
-        ),
-        "oil_painting_lora": (
-            "ntc-ai/SDXL-LoRA-slider.oil-painting",
-            "76939f71a95487755ef3eca62f82e7156bca8b682fc054d978d56d8f47bf4368",
-            "loras/",
+        "flux2_vae": (
+            "Comfy-Org/Flux-2-Klein-4B",
+            "5b3abca5c0dc1ecd4eaf3340868d09063fc1c965",
+            "split_files/vae/flux2-vae.safetensors",
+            336211292,
+            "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3",
+            "vae/",
         ),
     }
-    for key, (repo, sha256, prefix) in expected.items():
-        assert defaults[key]["repo"] == repo
-        assert defaults[key]["sha256"] == sha256
-        assert defaults[key]["relative_path"].startswith(prefix)
+    for key, (repo, revision, filename, size, sha256, prefix) in expected.items():
+        model = defaults[key]
+        assert model["repo"] == repo
+        assert model["revision"] == revision
+        assert model["filename"] == filename
+        assert model["size"] == size
+        assert model["sha256"] == sha256
+        assert model["relative_path"].startswith(prefix)
 
 
-def test_legacy_photomaker_models_are_optional_for_rollback():
-    models = json.loads(Path("config/models.lock.json").read_text(encoding="utf-8"))["models"]
-    legacy = {model["key"]: model for model in models}
-    for key in ("realvisxl_v5", "photomaker_v2", "face_detection", "face_recognition"):
-        assert legacy[key]["required"] is False
+def test_sdxl_instantid_and_style_loras_are_optional_for_rollback():
+    models = {model["key"]: model for model in load_models()}
+    optional = {
+        "realvisxl_v5", "realvisxl_v4", "sdxl_base_1_0", "photomaker_v2",
+        "face_detection", "face_recognition", "lcm_lora_sdxl",
+        "instantid_ip_adapter", "instantid_controlnet", "cyberpunk_lora",
+        "anime_lora", "ink_wash_lora", "oil_painting_lora",
+    }
+    assert all(models[key]["required"] is False for key in optional)

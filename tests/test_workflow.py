@@ -1,4 +1,4 @@
-# Server-pending: run these SDXL + InstantID workflow tests on the GPU server.
+# Server-pending: FLUX.2 Klein workflow tests for the GPU server.
 from pathlib import Path
 import subprocess
 import sys
@@ -14,140 +14,112 @@ def settings():
     return Settings(api_key="a" * 32, _env_file=None)
 
 
-def test_standard_contains_sdxl_instantid_style_and_output_guard_chain():
-    graph = build_workflow("standard")
-
-    assert graph["1"]["class_type"] == "CheckpointLoaderSimple"
-    assert graph["1"]["inputs"]["ckpt_name"] == "sd_xl_base_1.0.safetensors"
-    assert graph["2"]["class_type"] == "InstantIDModelLoader"
-    assert graph["2"]["inputs"]["instantid_file"] == "ip-adapter.bin"
-    assert graph["3"]["class_type"] == "InstantIDFaceAnalysis"
-    assert graph["4"]["class_type"] == "ControlNetLoader"
-    assert graph["4"]["inputs"]["control_net_name"] == (
-        "instantid/diffusion_pytorch_model.safetensors"
-    )
-    assert graph["16"]["class_type"] == "InstantIDSingleFaceInputGuard"
-    assert graph["16"]["inputs"] == {"images": ["5", 0], "faceanalysis": ["3", 0]}
-    assert graph["13"]["class_type"] == "LoraLoaderModelOnly"
-    assert graph["15"]["class_type"] == "ApplyInstantID"
-    assert graph["15"]["inputs"]["model"] == ["13", 0]
-    assert graph["15"]["inputs"]["image"] == ["16", 0]
-    assert graph["9"]["inputs"]["model"] == ["15", 0]
-    assert graph["9"]["inputs"]["positive"] == ["15", 1]
-    assert graph["9"]["inputs"]["negative"] == ["15", 2]
-    assert graph["9"]["inputs"]["steps"] == 25
+def assert_common_flux_chain(graph):
+    assert graph["2"]["class_type"] == "CLIPLoader"
+    assert graph["2"]["inputs"]["clip_name"] == "qwen_3_4b.safetensors"
+    assert graph["2"]["inputs"]["type"] == "flux2"
+    assert graph["3"]["class_type"] == "VAELoader"
+    assert graph["3"]["inputs"]["vae_name"] == "flux2-vae.safetensors"
+    assert graph["4"]["class_type"] == "InstantIDFaceAnalysis"
+    assert graph["18"]["class_type"] == "ImageScale"
+    assert graph["18"]["inputs"]["width"] == 1024
+    assert graph["18"]["inputs"]["height"] == 1024
+    assert graph["18"]["inputs"]["crop"] == "center"
+    assert graph["16"]["class_type"] == "FluxSingleFaceInputGuard"
+    assert graph["16"]["inputs"] == {"images": ["18", 0], "faceanalysis": ["4", 0]}
+    assert graph["19"]["class_type"] == "VAEEncode"
+    assert graph["19"]["inputs"] == {"pixels": ["16", 0], "vae": ["3", 0]}
+    assert graph["20"]["class_type"] == "ReferenceLatent"
+    assert graph["20"]["inputs"] == {"conditioning": ["6", 0], "latent": ["19", 0]}
+    assert graph["21"]["class_type"] == "ReferenceLatent"
+    assert graph["21"]["inputs"] == {"conditioning": ["7", 0], "latent": ["19", 0]}
+    assert graph["15"]["class_type"] == "CFGGuider"
+    assert graph["15"]["inputs"]["model"] == ["1", 0]
+    assert graph["15"]["inputs"]["positive"] == ["20", 0]
+    assert graph["15"]["inputs"]["negative"] == ["21", 0]
+    assert graph["13"]["class_type"] == "Flux2Scheduler"
+    assert graph["13"]["inputs"]["width"] == 1024
+    assert graph["13"]["inputs"]["height"] == 1024
+    assert graph["17"]["class_type"] == "RandomNoise"
+    assert graph["10"]["class_type"] == "KSamplerSelect"
+    assert graph["9"]["class_type"] == "SamplerCustomAdvanced"
+    assert graph["9"]["inputs"] == {
+        "noise": ["17", 0], "guider": ["15", 0], "sampler": ["10", 0],
+        "sigmas": ["13", 0], "latent_image": ["8", 0],
+    }
+    assert graph["8"]["class_type"] == "EmptyFlux2LatentImage"
     assert graph["8"]["inputs"] == {"width": 1024, "height": 1024, "batch_size": 1}
-    assert graph["14"]["class_type"] == "InstantIDSingleFaceOutputGuard"
-    assert graph["14"]["inputs"] == {"images": ["11", 0], "faceanalysis": ["3", 0]}
+    assert graph["14"]["class_type"] == "FluxSingleFaceOutputGuard"
+    assert graph["14"]["inputs"] == {"images": ["11", 0], "faceanalysis": ["4", 0]}
     assert graph["12"]["inputs"]["images"] == ["14", 0]
+    assert all(node["class_type"] != "LoraLoaderModelOnly" for node in graph.values())
 
 
-def test_turbo_places_lcm_between_style_lora_and_instantid():
+def test_standard_uses_base_fp8_and_advanced_flux_sampling():
+    graph = build_workflow("standard")
+    assert graph["1"]["class_type"] == "UNETLoader"
+    assert graph["1"]["inputs"]["unet_name"] == "flux-2-klein-base-4b-fp8.safetensors"
+    assert graph["13"]["inputs"]["steps"] == 20
+    assert graph["15"]["inputs"]["cfg"] == 4.0
+    assert graph["10"]["inputs"]["sampler_name"] == "euler"
+    assert_common_flux_chain(graph)
+
+
+def test_turbo_uses_distilled_fp8_and_four_steps():
     graph = build_workflow("turbo")
-
-    assert graph["10"]["class_type"] == "LoraLoaderModelOnly"
-    assert graph["10"]["inputs"]["model"] == ["13", 0]
-    assert graph["15"]["inputs"]["model"] == ["10", 0]
-    assert graph["9"]["inputs"]["model"] == ["15", 0]
-    assert graph["9"]["inputs"]["sampler_name"] == "lcm"
-    assert graph["9"]["inputs"]["steps"] == 8
-    assert graph["9"]["inputs"]["cfg"] == 1.8
-    assert graph["8"]["inputs"]["width"] == 1024
-    assert graph["8"]["inputs"]["height"] == 1024
+    assert graph["1"]["inputs"]["unet_name"] == "flux-2-klein-4b-fp8.safetensors"
+    assert graph["13"]["inputs"]["steps"] == 4
+    assert graph["15"]["inputs"]["cfg"] == 1.0
+    assert_common_flux_chain(graph)
 
 
-def test_parameter_injection_uses_instantid_without_photomaker_trigger():
+def test_parameter_injection_uses_reference_image_and_no_legacy_lora():
     styles = load_styles(Path("config/styles.json"))
     graph = prepare_workflow(
         "standard", ComfyImageRef("face.png"), styles["cyberpunk"],
         42, "aigc/task", settings(),
     )
-
     assert graph["5"]["inputs"]["image"] == "face.png"
-    assert graph["9"]["inputs"]["seed"] == 42
+    assert graph["17"]["inputs"]["noise_seed"] == 42
     assert graph["12"]["inputs"]["filename_prefix"] == "aigc/task"
     assert graph["6"]["inputs"]["text"] == styles["cyberpunk"].positive
     assert "person img" not in graph["6"]["inputs"]["text"]
     assert graph["7"]["inputs"]["text"] == styles["cyberpunk"].negative
-    assert graph["1"]["inputs"]["ckpt_name"] == "sd_xl_base_1.0.safetensors"
-    assert graph["3"]["inputs"]["provider"] == settings().face_provider
-    assert graph["13"]["inputs"]["lora_name"] == "lah-cyberpunk-sdxl.safetensors"
-    assert graph["13"]["inputs"]["strength_model"] == 1.0
+    assert graph["4"]["inputs"]["provider"] == "CPU"
 
 
-def test_prepare_uses_mode_settings_subfolder_and_instantid_weight():
+def test_prepare_uses_mode_settings_and_subfolder():
     styles = load_styles(Path("config/styles.json"))
     configured = settings().model_copy(
         update={
             "standard_steps": 31,
             "standard_cfg": 6.5,
-            "standard_sampler": "euler",
-            "standard_scheduler": "normal",
-            "turbo_steps": 10,
-            "turbo_cfg": 2.0,
-            "instantid_weight": 0.65,
+            "standard_sampler": "euler_ancestral",
+            "turbo_steps": 6,
+            "turbo_cfg": 1.5,
         }
     )
-    original = build_workflow("turbo")
-
-    graph = prepare_workflow(
-        "turbo", ComfyImageRef("face.png", subfolder="uploads"), styles["anime"],
+    standard = prepare_workflow(
+        "standard", ComfyImageRef("face.png", subfolder="uploads"), styles["anime"],
+        7, "aigc/standard", configured,
+    )
+    turbo = prepare_workflow(
+        "turbo", ComfyImageRef("face.png"), styles["anime"],
         7, "aigc/turbo", configured,
     )
-
-    assert graph["5"]["inputs"]["image"] == "uploads/face.png"
-    assert graph["9"]["inputs"]["steps"] == 10
-    assert graph["9"]["inputs"]["cfg"] == 2.0
-    assert graph["9"]["inputs"]["sampler_name"] == "lcm"
-    assert graph["9"]["inputs"]["scheduler"] == "normal"
-    assert graph["13"]["inputs"]["lora_name"] == "anime-sdxl.safetensors"
-    assert graph["13"]["inputs"]["strength_model"] == 2.0
-    assert graph["15"]["inputs"]["weight"] == 0.65
-    assert original["9"]["inputs"]["steps"] == 8
-
-
-@pytest.mark.parametrize(
-    ("key", "filename", "strength"),
-    [
-        ("cyberpunk", "lah-cyberpunk-sdxl.safetensors", 1.0),
-        ("anime", "anime-sdxl.safetensors", 2.0),
-        ("ink_wash", "chinese-ink-sdxl.safetensors", 0.8),
-        ("oil_painting", "oil-painting-sdxl.safetensors", 2.0),
-    ],
-)
-def test_each_style_selects_exactly_one_style_lora(key, filename, strength):
-    styles = load_styles(Path("config/styles.json"))
-    graph = prepare_workflow(
-        "standard", ComfyImageRef("face.png"), styles[key], 42, "aigc/task", settings()
-    )
-    style_loaders = [
-        node for node in graph.values()
-        if node["class_type"] == "LoraLoaderModelOnly"
-        and node["inputs"]["lora_name"] != "lcm-lora-sdxl.safetensors"
-    ]
-    assert len(style_loaders) == 1
-    assert style_loaders[0]["inputs"]["lora_name"] == filename
-    assert style_loaders[0]["inputs"]["strength_model"] == strength
-
-
-def test_prepare_standard_uses_custom_sampler_and_scheduler():
-    styles = load_styles(Path("config/styles.json"))
-    configured = settings().model_copy(
-        update={"standard_sampler": "euler", "standard_scheduler": "normal"}
-    )
-    graph = prepare_workflow(
-        "standard", ComfyImageRef("face.png"), styles["anime"], 7, "aigc/test", configured
-    )
-    assert graph["9"]["inputs"]["sampler_name"] == "euler"
-    assert graph["9"]["inputs"]["scheduler"] == "normal"
+    assert standard["5"]["inputs"]["image"] == "uploads/face.png"
+    assert standard["13"]["inputs"]["steps"] == 31
+    assert standard["15"]["inputs"]["cfg"] == 6.5
+    assert standard["10"]["inputs"]["sampler_name"] == "euler_ancestral"
+    assert turbo["13"]["inputs"]["steps"] == 6
+    assert turbo["15"]["inputs"]["cfg"] == 1.5
+    assert turbo["10"]["inputs"]["sampler_name"] == "euler"
 
 
 def test_committed_workflow_artifacts_are_reproducible():
     completed = subprocess.run(
         [sys.executable, "scripts/build_workflows.py", "--check"],
-        capture_output=True,
-        text=True,
-        check=False,
+        capture_output=True, text=True, check=False,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
 

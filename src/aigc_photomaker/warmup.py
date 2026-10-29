@@ -21,8 +21,6 @@ WARMUP_STYLE = StylePreset(
     description="Fixed cyberpunk portrait used for full startup validation",
     positive="solo, one person, single subject, cyberpunk style cinematic portrait of a person, neon cyan and magenta rim lighting, detailed facial features",
     negative="low quality, deformed face, extra fingers, bad anatomy, multiple people, two people, duplicate person, extra face",
-    lora_filename="lah-cyberpunk-sdxl.safetensors",
-    lora_strength=1.0,
 )
 
 
@@ -90,7 +88,7 @@ def run_warmup(settings: Settings, modes=("standard", "turbo")) -> dict:
                 settings,
             )
             # Validate a deliverable single-face image, not a one-step approximation.
-            graph["9"]["inputs"].update(seed=0)
+            graph["17"]["inputs"].update(noise_seed=0)
             graph["8"]["inputs"].update(width=1024, height=1024, batch_size=1)
             prompt_id = client.submit(graph, "aigc-photomaker-warmup")
             result = client.wait_for_result(prompt_id, settings.execution_timeout_seconds)
@@ -101,7 +99,7 @@ def run_warmup(settings: Settings, modes=("standard", "turbo")) -> dict:
             _verify_png(output)
             mode_reports[mode] = {
                 "seed": 0,
-                "steps": graph["9"]["inputs"]["steps"],
+                "steps": graph["13"]["inputs"]["steps"],
                 "width": 1024,
                 "height": 1024,
             }

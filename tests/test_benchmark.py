@@ -144,6 +144,19 @@ def test_negative_smoke_accepts_asynchronous_face_policy_error(monkeypatch):
     assert result["task_id"] == "negative-task"
 
 
+def test_collect_evidence_reports_flux_sampler_and_scheduler():
+    evidence = benchmark.collect_evidence()
+    modes = evidence["parameters"]["modes"]
+    assert modes["standard"]["sampler"] == "euler"
+    assert modes["standard"]["scheduler"] == "Flux2Scheduler"
+    assert modes["turbo"] == {
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "scheduler": "Flux2Scheduler",
+    }
+
+
 def test_seed_sequence_stays_within_api_limit():
     assert benchmark.seed_sequence(MAX_SEED, 3) == [MAX_SEED, 0, 1]
     assert benchmark.warmup_seed(0) == MAX_SEED

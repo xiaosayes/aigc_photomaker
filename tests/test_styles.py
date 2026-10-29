@@ -4,13 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from aigc_photomaker.styles import StylePreset, load_styles
+from aigc_photomaker.styles import load_styles
 
 
 STYLES_PATH = Path("config/styles.json")
 
 
-def test_styles_load_all_presets_with_required_copy():
+def test_styles_load_all_presets_with_required_copy_and_no_sdxl_lora():
     styles = load_styles(STYLES_PATH)
 
     assert set(styles) == {"cyberpunk", "anime", "ink_wash", "oil_painting"}
@@ -20,6 +20,8 @@ def test_styles_load_all_presets_with_required_copy():
         assert style.description
         assert "person img" not in style.positive
         assert "person" in style.positive
+        assert not hasattr(style, "lora_filename")
+        assert not hasattr(style, "lora_strength")
         for term in ("solo", "one person", "single subject"):
             assert term in style.positive
         for term in (
@@ -29,27 +31,14 @@ def test_styles_load_all_presets_with_required_copy():
         ):
             assert term in style.negative
 
-    expected_loras = {
-        "cyberpunk": ("lah-cyberpunk-sdxl.safetensors", 1.0, "cyberpunk style"),
-        "anime": ("anime-sdxl.safetensors", 2.0, "anime"),
-        "ink_wash": ("chinese-ink-sdxl.safetensors", 0.8, "Chinese Ink"),
-        "oil_painting": ("oil-painting-sdxl.safetensors", 2.0, "oil painting"),
+    triggers = {
+        "cyberpunk": "cyberpunk style",
+        "anime": "anime",
+        "ink_wash": "Chinese Ink",
+        "oil_painting": "oil painting",
     }
-    for key, (filename, strength, trigger) in expected_loras.items():
-        assert styles[key].lora_filename == filename
-        assert styles[key].lora_strength == strength
+    for key, trigger in triggers.items():
         assert trigger in styles[key].positive
-
-
-def test_style_preset_requires_an_explicit_lora_contract():
-    with pytest.raises(TypeError):
-        StylePreset(
-            key="invalid",
-            label="Invalid",
-            description="Missing LoRA configuration",
-            positive="portrait of a person",
-            negative="low quality",
-        )
 
 
 def test_styles_file_is_valid_json():

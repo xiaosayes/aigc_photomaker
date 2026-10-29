@@ -10,8 +10,6 @@ class StylePreset:
     description: str
     positive: str
     negative: str
-    lora_filename: str
-    lora_strength: float
 
 
 def load_styles(path: Path) -> dict[str, StylePreset]:
@@ -19,12 +17,7 @@ def load_styles(path: Path) -> dict[str, StylePreset]:
     styles = {}
     for key, values in data.items():
         preset = StylePreset(key=key, **values)
-        if (
-            not preset.lora_filename.endswith(".safetensors")
-            or "/" in preset.lora_filename
-            or "\\" in preset.lora_filename
-            or not 0 < preset.lora_strength <= 3
-        ):
-            raise ValueError(f"STYLE_LORA_CONFIG:{key}")
+        if "person img" in preset.positive:
+            raise ValueError(f"STYLE_LEGACY_TRIGGER:{key}")
         styles[key] = preset
     return styles

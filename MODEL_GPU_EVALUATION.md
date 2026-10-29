@@ -1,54 +1,51 @@
-# 模型、GPU 与容量评估
+# 模型、GPU 与容量评估（feature/flux）
 
-## 1. 当前路线与实测边界
+## 1. 当前路线
 
-当前默认采用 **官方 SDXL Base 1.0 + InstantID + antelopev2 + 每风格一个 SDXL LoRA**；Turbo 在风格 LoRA 后增加 LCM-LoRA。RealVisXL V5 + PhotoMaker V2 已因四风格实测区分度不足退出当前工作流，仅作为可选回滚材料。
+`feature/flux` 默认使用 **FLUX.2 [klein] Base 4B FP8（Standard）与 Distilled 4B FP8（Turbo）**，身份与构图参考由原生 ReferenceLatent 提供。官方 SDXL Base + InstantID 保留为 `main` 的历史路线，本分支不再加载其权重。
 
-1024×1024、batch 1、Standard 25 步/CFG 4.0、Turbo 8 步/CFG 1.8 是新路线的初始基线，不代表画质或性能已经验收。InstantID 是否优于 PhotoMaker V2 必须由同输入、同 seed 的真实 A/B 决定。
+- Standard：20 步、CFG 4.0、euler；
+- Turbo：4 步、CFG 1.0、euler；
+- 共用 Qwen3 文本编码器和 FLUX.2 VAE；
+- 第一版使用原生提示词风格，不使用 SDXL 风格 LoRA 或 SDXL LCM。
 
-**单 GPU 结论仍为一个活跃生成任务。** Worker 串行执行，其他请求排队。30 秒是热态、无排队、单并发的目标，不是预填结果。
+这些参数是新基线，不是画质或性能承诺。Base 与 Distilled 的比较必须分开进行，不能把不同权重下的同 seed 结果当成严格单变量对照。
 
 ## 2. 各组件职责
 
-- **官方 SDXL Base 1.0**：当前基础生成模型，包含 CLIP、UNet 和 VAE。四个风格 LoRA 主要按这一架构训练，选择它是为了避免 RealVisXL 的强写实先验限制动漫、水墨和油画。
-- **InstantID IP-Adapter**：将 antelopev2 人脸 embedding 注入身份条件，与文本条件共同影响生成。
-- **InstantID ControlNet**：使用人脸关键点约束姿态和面部结构。它增加模型文件、计算与显存，不应被描述为无成本替换。
-- **antelopev2**：用于人脸检测、关键点和身份特征，不判断姓名。输入和输出还各有一次单人脸守卫。
-- **四个风格 LoRA**：赛博朋克、动漫、水墨、油画每次只加载一个，初始强度为 1.0、2.0、0.8、2.0。强度是 A/B 起点，不是最优值。
-- **LCM-LoRA**：Turbo 的低步数加速组件。Turbo 与 Standard 分开评价，不预设谁在所有风格上更好。
+- **Base FP8**：Standard 的未蒸馏生成模型，偏质量和可调整性。
+- **Distilled FP8**：Turbo 的低步数模型，偏交互速度。FP8 用于控制单张 3090 的显存和加载成本，兼容性/画质须实测。
+- **Qwen3 4B 文本编码器**：编码风格提示词，不是 SDXL CLIP。
+- **FLUX.2 VAE**：负责参考图编码和生成潜图解码。
+- **ReferenceLatent**：将参考图的身份与构图信息接入正负条件，替代 InstantID 的独立身份模块。
+- **antelopev2**：仅用于输入/输出单人脸检查，不负责 FLUX 身份注入。
 
-## 3. 为什么替换 RealVisXL + PhotoMaker V2
+## 3. 可复用与重写边界
 
-RealVisXL 偏真实皮肤、摄影光影和写实人像。PhotoMaker V2 的 ID Encoder、InsightFace 与 UNet LoRA 能保留身份，但实测中它与写实基础模型共同压制了跨媒介风格，出现“原脸略变、背景略变”的结果。
+复用：FastAPI、鉴权、上传规范化、SQLite、Worker、取消/恢复、保留期清理、四风格文本、前端、ComfyUI HTTP/WebSocket 和 antelopev2 守卫。
 
-这并不证明 PhotoMaker V2 或 RealVisXL 本身质量差，而是说明它们与当前四风格目标不匹配。InstantID 用 attention 和关键点 ControlNet 提供另一条身份路径，官方 SDXL Base 也更贴近所选风格 LoRA 的训练基座。
+重写：UNET/Qwen/VAE 加载、ReferenceLatent、Flux2Scheduler、CFGGuider、RandomNoise、SamplerCustomAdvanced、1024 参考图处理、双权重切换、模型锁和性能基线。
 
-## 4. 路线比较
+不兼容：RealVisXL/SDXL checkpoint、InstantID IP-Adapter/ControlNet、四个 SDXL 风格 LoRA、SDXL LCM-LoRA。它们不能直接串联到 FLUX Transformer。
+
+## 4. 与旧路线比较
 
 | 路线 | 优势 | 代价/风险 | 当前决定 |
 | --- | --- | --- | --- |
-| SDXL Base + InstantID | 与风格 LoRA 基座一致，身份和关键点分路控制 | ControlNet/IP-Adapter 增加下载、显存和兼容性风险 | 当前默认，待真实 A/B |
-| RealVisXL + PhotoMaker V2 | 写实人像和既有部署链成熟 | 四风格实测弱，身份与风格互相抑制 | 可选回滚，不进入当前图 |
-| RealVisXL V4 | 可对照 PhotoMaker 官方示例 | 仍有写实先验 | 可选，不默认加载 |
-| InstantID + 社区 checkpoint | 可能进一步提高风格 | 每个 checkpoint 的许可、兼容性和缓存都需重新验收 | 后续候选 |
-| FLUX.1-dev + PuLID/InfiniteYou | 视觉上限有吸引力 | 不同架构，单张 3090 的显存和时延风险更高 | 不在本次替换范围 |
+| FLUX.2 Base + Distilled | 原生参考图编辑、统一生成/编辑、两种权重适配双模式 | 双模型下载和缓存、Qwen 文本链、显存与时延待实测 | `feature/flux` 默认 |
+| SDXL Base + InstantID | 现有主分支链成熟、身份控制明确 | 四风格曾出现写实倾向与身份/风格冲突 | `main` 保留，不合并且不覆盖 |
+| RealVisXL + PhotoMaker V2 | 写实人像与既有部署经验 | 四风格区分度不足 | 可选回滚材料 |
+| FLUX.2 专用风格 LoRA | 可能进一步增强风格 | 必须确认 FLUX.2 原生兼容和许可 | 后续单独批准，不混用 SDXL LoRA |
+| FLUX.1/FLUX.3 其他版本 | 可作为后续模型研究 | 不同权重、文本编码、许可与生态 | 不在当前实现范围 |
 
-## 5. A/B 方法
+## 5. 显存、时延与验收
 
-1. 固定获授权的单人脸输入、seed、风格 LoRA、分辨率和输出守卫。
-2. 先 Standard 后 Turbo，逐风格比较，不把不同 seed 的结果当作公平对照。
-3. 记录成功/失败、输出人脸数量、检测误拒、端到端 P50/P95、GPU 1 峰值和 OOM。
-4. 至少两名评审盲看风格与身份；不能只选一张好图。
-5. 每次只改 checkpoint、InstantID 权重、风格强度、CFG 或步数中的一个变量。
-6. 未经报告证明，不把 InstantID 的路线更换称为质量提升。
-
-## 6. 显存与容量
-
-**16–22GB 仍是工程估算，不是实测占用。** InstantID 新增约 4.2GB 的 IP-Adapter/ControlNet 权重，官方 SDXL Base 约 6.9GB，antelopev2 还需单独加载；文件大小不能直接等同于显存峰值，必须计入激活、VAE、CUDA 上下文、缓存和碎片。
+新增模型下载约 16.5GB。权重文件大小不能直接等同于显存峰值：还要计入文本编码、VAE、参考图条件、采样激活、CUDA 上下文、双 UNet 缓存和碎片。16–22GB 只能作为工程估算，真实值以 GPU 1 监控为准。
 
 - 保持物理 GPU 1、1024×1024、batch 1 和单活跃任务。
-- 启动要求可用显存达到 `AIGC_GPU_MIN_FREE_MIB`，其他服务不得被停止来伪造空闲。
-- 如果实际 OOM，保存日志与报告，不通过删除身份模块或降低分辨率掩盖。
-- 扩容仍须依据持续排队和真实服务目标，不以单日估算替代实测。
+- Standard/Turbo 不并行执行；交替模式用于测量权重切换，不替代单模式基准。
+- 记录首次加载、热态 P50/P95、峰值显存、OOM 和其他服务的影响；不得停止已有服务制造达标结果。
+- Standard 至少 20 个成功样本，Turbo 至少 10 个，另做双权重交替测试。
+- 四风格以同输入同 seed 配对，记录风格辨识度、身份、参考构图和输出人脸数量。未经报告证明，不宣称 FLUX.2 优于旧路线。
 
-模型文件以 `config/models.lock.json` 为唯一机器可读清单，节点与 Torch 版本以 `config/versions.lock.env` 和 `vendor/ComfyUI_InstantID/.aigc-commit` 为准。
+**单 GPU 数量结论仍为一张 RTX 3090 支撑一个活跃生成任务。** 只有持续排队和真实服务目标无法满足时才讨论扩容；扩容前必须分别评估权重加载、CPU offload、网络、磁盘和其他 GPU 服务，不能仅靠增加 Worker 或停止已有服务解决。

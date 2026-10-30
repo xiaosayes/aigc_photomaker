@@ -235,6 +235,6 @@ pip_run install -e "$ROOT" --no-deps
 pip_run check
 
 ensure_api_key
-"$ROOT/scripts/download_models.sh"
+bash "$ROOT/scripts/download_models.sh"
 python -m pytest -q "$ROOT/tests"
 log "Installation complete"

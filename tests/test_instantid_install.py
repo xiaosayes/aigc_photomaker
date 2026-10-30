@@ -16,3 +16,8 @@ def test_installer_ignores_crlf_when_comparing_instantid_commits():
     assert installer.count("tr -d '[:space:]'") >= 3
     assert 'instantid_actual="$(' in installer
     assert 'instantid_expected="$(' in installer
+
+
+def test_model_download_script_is_invoked_through_bash():
+    installer = Path("scripts/install.sh").read_text(encoding="utf-8")
+    assert 'bash "$ROOT/scripts/download_models.sh"' in installer

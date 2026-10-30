@@ -2,7 +2,7 @@
 
 ## 1. 当前基线
 
-`feature/flux` 使用 **FLUX.2 [klein] 4B + 原生 ReferenceLatent 身份/构图参考**。Standard 使用 Base FP8，Turbo 使用 Distilled FP8；不再加载 SDXL、InstantID IP-Adapter/ControlNet、SDXL 风格 LoRA 或 SDXL LCM-LoRA。
+`feature/flux` 使用 **FLUX.2 [klein] 4B Distilled FP8 + 原生 ReferenceLatent 身份/构图参考**。Standard 使用 8 步、CFG 1.0，Turbo 使用 4 步、CFG 1.0；不再加载 Base FP8、SDXL、InstantID IP-Adapter/ControlNet、SDXL 风格 LoRA 或 SDXL LCM-LoRA。
 
 | 文件 | 用途 |
 | --- | --- |
@@ -17,9 +17,9 @@
 Standard：
 
 ```text
-UNETLoader = flux-2-klein-base-4b-fp8.safetensors
-Flux2Scheduler = 20 steps
-CFGGuider = 4.0
+UNETLoader = flux-2-klein-4b-fp8.safetensors
+Flux2Scheduler = 8 steps
+CFGGuider = 1.0
 KSamplerSelect = euler
 ```
 
@@ -72,7 +72,7 @@ ReferenceLatent 将上传照片的身份与构图信息接入正负条件，代�
 
 | 相对路径 | 用途 |
 | --- | --- |
-| `diffusion_models/flux-2-klein-base-4b-fp8.safetensors` | Standard Base FP8 |
+| `diffusion_models/flux-2-klein-base-4b-fp8.safetensors` | 可选回滚 Base FP8，默认不加载 |
 | `diffusion_models/flux-2-klein-4b-fp8.safetensors` | Turbo Distilled FP8 |
 | `text_encoders/qwen_3_4b.safetensors` | Qwen3 文本编码器 |
 | `vae/flux2-vae.safetensors` | FLUX.2 VAE |
@@ -108,4 +108,4 @@ python scripts/inspect_latest_task.py
 
 更新模型或 vendor 后须重新安装并受管重启。预热分别执行 Standard 20 步和 Turbo 4 步，强制验证 1024×1024 RGB PNG 和输出单人脸。
 
-先 Standard 后 Turbo，使用同一输入和 seed 比较四风格辨识度、身份、构图、额外人脸和耗时。双 FP8 权重切换需另测冷/热加载、缓存和峰值显存；未经真实 A/B，不得宣称 FLUX.2 优于 `main` 的 SDXL + InstantID。
+先 Standard 后 Turbo，使用同一输入和 seed 比较四风格辨识度、身份、构图、额外人脸和耗时。原 Base 路线实测 20 步采样约 44 秒、总执行约 51–69 秒且质量不佳，现已改为 Standard/Turbo 共用 Distilled，分别 8/4 步。未经新 A/B，不得宣称优化已达标。

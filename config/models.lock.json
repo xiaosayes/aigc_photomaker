@@ -112,7 +112,7 @@
     },
     {
       "key": "flux2_klein_base_fp8",
-      "required": true,
+      "required": false,
       "repo": "black-forest-labs/FLUX.2-klein-base-4b-fp8",
       "revision": "103db268c10d4d3921101b46057671f9ac460da6",
       "filename": "flux-2-klein-base-4b-fp8.safetensors",

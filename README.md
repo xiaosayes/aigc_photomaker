@@ -1,6 +1,6 @@
 # AIGC PhotoMaker
 
-基于 ComfyUI 的单人照片风格化应用：浏览器上传一张单人脸照片，选择赛博朋克、动漫、水墨或油画，使用 Standard（质量优先）或 Turbo（速度优先）生成 **1024×1024 RGB PNG**。`feature/flux` 当前链路为 **FLUX.2 [klein] Base 4B FP8（Standard）/ Distilled 4B FP8（Turbo）+ 原生 ReferenceLatent 身份与构图参考**。输入与输出均执行单人脸守卫。旧 SDXL、InstantID 和风格 LoRA 仅保留为可选回滚材料，`main` 不被本分支修改。
+基于 ComfyUI 的单人照片风格化应用：浏览器上传一张单人脸照片，选择赛博朋克、动漫、水墨或油画，使用 Standard（质量优先）或 Turbo（速度优先）生成 **1024×1024 RGB PNG**。`feature/flux` 当前链路为 **FLUX.2 [klein] Distilled 4B FP8（Standard 8 步 / Turbo 4 步）+ 原生 ReferenceLatent 身份与构图参考**。输入与输出均执行单人脸守卫。旧 SDXL、InstantID 和风格 LoRA 仅保留为可选回滚材料，`main` 不被本分支修改。
 
 > 当前交付只声明代码与静态结构。模型下载、安装、启动、API、浏览器、画质和性能均须在目标服务器验收；本仓库没有预填服务器成功结果。
 

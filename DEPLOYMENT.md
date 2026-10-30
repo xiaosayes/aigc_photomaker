@@ -27,7 +27,7 @@ bash scripts/status.sh
 
 **配置优先级**：不可变仓库/commit/ Torch 版本来自 `config/versions.lock.env`；运行配置中，调用者显式导出的 `AIGC_*`、`HF_ENDPOINT`、`PIP_INDEX_URL`、`PIP_EXTRA_INDEX_URL`、`PYTORCH_INDEX_URL`、`GITHUB_PROXY` 覆盖 `.env`，`.env` 再提供默认值。也就是说 `.env` 不能覆盖锁定 commit，也不能悄悄覆盖当前 shell 的显式选择。
 
-安装器固定 ComfyUI commit，复制随包交付的 InstantID/FLUX 人脸守卫与历史 PhotoMaker Plus 节点源码，创建/复用环境并安装 wheel，校验和导入模型，并把锁定的 antelopev2 归档安全解压到 `models/insightface/models/antelopev2/`。`feature/flux` 默认需要 FLUX.2 Base/Distilled FP8、Qwen3 文本编码器、FLUX.2 VAE 和 antelopev2，新增下载约 16.5GB；旧 SDXL、InstantID 和风格 LoRA 仅作为可选回滚项，`AIGC_INCLUDE_OPTIONAL_MODELS=1` 才会包含全部可选模型。模型目录为 `.runtime/ComfyUI/models/`，离线模式不会隐式联网补模型。
+安装器固定 ComfyUI commit，复制随包交付的 InstantID/FLUX 人脸守卫与历史 PhotoMaker Plus 节点源码，创建/复用环境并安装 wheel，校验和导入模型，并把锁定的 antelopev2 归档安全解压到 `models/insightface/models/antelopev2/`。`feature/flux` 默认需要 FLUX.2 Distilled FP8、Qwen3 文本编码器、FLUX.2 VAE 和 antelopev2，新增下载约 12.8GB；Base FP8 仅作可选回滚，旧 SDXL、InstantID 和风格 LoRA 仅作为可选回滚项，`AIGC_INCLUDE_OPTIONAL_MODELS=1` 才会包含全部可选模型。模型目录为 `.runtime/ComfyUI/models/`，离线模式不会隐式联网补模型。
 
 ### 2.1 在线手工安装 Python 依赖
 
@@ -163,7 +163,7 @@ bash scripts/benchmark.sh --alternate-modes --runs 10 --base-seed 13000
 | `onnxruntime-gpu==1.20.1` 找不到 | 官方 PyPI 未发布该版本（返回 404），不是 Conda 或 Python 环境问题。改用官方存在且提供 CPython 3.11 wheel 的 `onnxruntime-gpu==1.20.2`，同步更新 `requirements.txt` 与 `requirements/ml.txt` 后重试。 |
 | 缺脸/多脸 | 换清晰、正脸、单人照片；`NO_FACE_DETECTED`/`MULTIPLE_FACES_DETECTED` 是输入质量问题，不以随机图绕过 InstantID/antelopev2。输出对应错误为 `OUTPUT_NO_FACE_DETECTED` 和 `OUTPUT_MULTIPLE_FACES_DETECTED`。 |
 | 模型缺失或 SHA 不匹配 | 运行 `bash scripts/download_models.sh`（离线时先验证大包），核对 `config/models.lock.json` 的目录、revision、大小和 hash；不要删除校验或混用 V1/V2。 |
-| 节点/模型不匹配 | 核对固定 ComfyUI commit、完整自定义节点目录、FLUX.2 Base/Distilled FP8、Qwen3 文本编码器、FLUX.2 VAE 与 antelopev2 解压目录；Standard/Turbo 都必须保留 ReferenceLatent 和输入/输出守卫。 |
+| 节点/模型不匹配 | 核对固定 ComfyUI commit、完整自定义节点目录、FLUX.2 Distilled FP8、Qwen3 文本编码器、FLUX.2 VAE 与 antelopev2 解压目录；Standard/Turbo 都必须保留 ReferenceLatent 和输入/输出守卫。 |
 | 启动中断或半启动 | 查看日志与 PID。启动脚本对失败/INT/TERM 清理本次已启动进程；确认无占用后再启动，不要手工复制不明 PID。 |
 | Worker/API 不就绪 | 看 `.runtime/app/logs/worker.log`、`api.log` 和 readiness 响应，检查数据库/磁盘、ComfyUI 回环访问与预热；Key 不应出现在日志。 |
 | 浏览器打不开/401/限流 | 检查防火墙、实际 `AIGC_APP_PORT` 监听和 API Key；401 不通过关闭鉴权解决，限流应等待并检查请求频率。 |

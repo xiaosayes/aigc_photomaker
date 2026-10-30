@@ -22,8 +22,8 @@
 | 模型/数据组件 | 用途 | 许可状态与强制核验 |
 | --- | --- | --- |
 | [SG161222/RealVisXL_V5.0](https://huggingface.co/SG161222/RealVisXL_V5.0) | 可选回滚的 SDXL 写实 checkpoint | RealVisXL 是模型权重，不因其 SDXL 架构而自动继承一个可随意商用的结论。必须在锁定 revision 核对模型卡 license、使用限制、分发与署名；若页面不明确，标记待核实并阻塞相应发布/商用，不自行命名许可。可选 V4 同样单独复核。 |
-| [black-forest-labs/FLUX.2-klein-base-4b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-base-4b-fp8) | `feature/flux` 的 Standard Base FP8 | 模型卡标记 **Apache-2.0**。按锁定 revision 保存 LICENSE.md 与模型卡，复核商标、使用政策、输入人脸和生成内容责任；官方硬件/时延描述不等于本项目验收值。 |
-| [black-forest-labs/FLUX.2-klein-4b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8) | `feature/flux` 的 Turbo Distilled FP8 | 模型卡标记 **Apache-2.0**。按锁定 revision 保存许可与模型卡；蒸馏路线与 Base 分别验收，不把官方亚秒级描述当作本机结果。 |
+| [black-forest-labs/FLUX.2-klein-base-4b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-base-4b-fp8) | 可选回滚 Base FP8，默认不加载 | 模型卡标记 **Apache-2.0**。按锁定 revision 保存 LICENSE.md 与模型卡，复核商标、使用政策、输入人脸和生成内容责任；官方硬件/时延描述不等于本项目验收值。 |
+| [black-forest-labs/FLUX.2-klein-4b-fp8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8) | `feature/flux` 的 Standard/Turbo Distilled FP8 | 模型卡标记 **Apache-2.0**。按锁定 revision 保存许可与模型卡；蒸馏路线与 Base 分别验收，不把官方亚秒级描述当作本机结果。 |
 | [Comfy-Org/Flux-2-Klein-4B](https://huggingface.co/Comfy-Org/Flux-2-Klein-4B) | Qwen3 文本编码器与 FLUX.2 VAE | 仓库标记 **Apache-2.0**。固定 Qwen3/VAE 的仓库 revision 和 hash，核对上游组件许可、重新分发和 NOTICE，不以 ComfyUI 打包许可替代全部模型条款。 |
 | [stabilityai/stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) | 可选回滚的官方 SDXL Base 1.0 | 核对锁定 revision 的 SDXL 模型卡、Community/使用许可及可接受使用条款。代码许可与 SDXL 权重条款不可混同；未核验不得声称商业可用。 |
 | [TencentARC/PhotoMaker-V2](https://huggingface.co/TencentARC/PhotoMaker-V2) | 可选回滚的身份编码和 UNet 身份 LoRA | 核对 V2 官方权重及模型卡；不得用 V1、ComfyUI 节点或 Plus 节点条款替代 V2 权重条款。 |

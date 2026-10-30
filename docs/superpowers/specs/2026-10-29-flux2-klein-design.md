@@ -1,5 +1,7 @@
 # FLUX.2 [klein] 4B 人脸风格化设计
 
+> **实测优化修订**：Base 20 步在 RTX 3090 上每步约 2.22 秒，采样约 44 秒、完整执行约 51–69 秒，且质量未优于 Distilled。当前 Standard 改为与 Turbo 共用 Distilled FP8，Standard 8 步、Turbo 4 步，CFG 均为 1.0；Base 仅保留为可选回滚。本文其余 Base/Distilled 双模型内容记录初始方案，不再作为当前默认值。
+
 > 分支约束：全部变更只在 `feature/flux`，不合并到 `main`。`main` 的 SDXL + InstantID 基线保持不变。
 
 ## 1. 目标与模式

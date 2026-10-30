@@ -3,8 +3,8 @@
 - 设计日期：2026-10-26
 - 项目代号：`aigc-photomaker`
 - 核心引擎：ComfyUI
-- `feature/flux` 当前模型路线：FLUX.2 [klein] Base 4B FP8（Standard）/ Distilled 4B FP8（Turbo）+ 原生 ReferenceLatent；`main` 的 SDXL + InstantID 不被本分支修改
-- 加速路线：FLUX.2 [klein] Base + Distilled FP8 Turbo
+- `feature/flux` 当前模型路线：FLUX.2 [klein] Distilled 4B FP8（Standard 8 步 / Turbo 4 步）+ 原生 ReferenceLatent；`main` 的 SDXL + InstantID 不被本分支修改
+- 加速路线：Standard/Turbo 共用 Distilled FP8，分别 8 步与 4 步
 - 目标服务器：Ubuntu 22.04 x86_64、Conda、一张 RTX 3090 24GB
 - GPU 绑定：物理卡 1（第二张卡），通过 `CUDA_VISIBLE_DEVICES=1` 隔离
 - 设计状态：架构、模型方向、性能目标、安全与部署原则均已与需求方确认
@@ -64,7 +64,7 @@
 
 | 组件 | 默认选择 | 作用 |
 | --- | --- | --- |
-| 基础生图模型 | `black-forest-labs/FLUX.2-klein-base-4b-fp8` 与 `FLUX.2-klein-4b-fp8` | Standard Base 与 Turbo Distilled 双权重路线 |
+| 基础生图模型 | `black-forest-labs/FLUX.2-klein-4b-fp8` | Standard/Turbo 共用 Distilled FP8，Base 仅回滚 |
 | 身份与构图参考 | FLUX.2 原生 ReferenceLatent | 将上传照片的身份和构图信息接入正负条件 |
 | 文本与 VAE | Qwen3 4B 与 FLUX.2 VAE | 文本条件、参考图编码和结果解码 |
 | 人脸检测与特征 | InsightFace `antelopev2` | 仅执行输入/输出单人脸守卫 |
@@ -120,8 +120,8 @@ FastAPI 应用
   │ 查询执行状态、下载结果、原子写回、记录指标和错误
   ▼
 ComfyUI 127.0.0.1:8188
-  ├── Standard：FLUX.2 Klein Base FP8 + ReferenceLatent
-  └── Turbo：FLUX.2 Klein Distilled FP8 + ReferenceLatent，低步数采样
+  ├── Standard：FLUX.2 Klein Distilled FP8 + ReferenceLatent，8 步
+  └── Turbo：FLUX.2 Klein Distilled FP8 + ReferenceLatent，4 步
   ▼
 物理 GPU 1（CUDA_VISIBLE_DEVICES=1，进程内显示为 cuda:0）
 ```
@@ -205,7 +205,7 @@ LoadImage
   → VAEEncode
   → 正负 ReferenceLatent
 
-UNETLoader（Standard Base FP8 / Turbo Distilled FP8）
+UNETLoader（Standard/Turbo 共用 Distilled FP8）
   → CFGGuider
   → Flux2Scheduler + RandomNoise + KSamplerSelect
   → SamplerCustomAdvanced
@@ -226,7 +226,7 @@ Turbo 使用独立的 Distilled FP8 权重，配合 Flux2Scheduler、euler 和 4
 
 ### 7.3 参数基线
 
-- Standard：1024×1024、batch 1、Base FP8、20 步、CFG 4.0、euler。
+- Standard：1024×1024、batch 1、Distilled FP8、8 步、CFG 1.0、euler。
 - Turbo：1024×1024、batch 1、Distilled FP8、4 步、CFG 1.0、euler。
 - 人脸 Provider：分别测试 CPU 与 CUDA；默认选择通过画质、时延和显存验收的配置。
 - 不启用 Refiner、Hires Fix、ControlNet、批量生成和 upscale。

@@ -9,7 +9,6 @@ def load_models():
 def test_manifest_has_verified_flux_defaults():
     defaults = {model["key"]: model for model in load_models() if model["required"]}
     assert set(defaults) == {
-        "flux2_klein_base_fp8",
         "flux2_klein_turbo_fp8",
         "flux2_qwen_text_encoder",
         "flux2_vae",
@@ -65,6 +64,7 @@ def test_sdxl_instantid_and_style_loras_are_optional_for_rollback():
     models = {model["key"]: model for model in load_models()}
     optional = {
         "realvisxl_v5", "realvisxl_v4", "sdxl_base_1_0", "photomaker_v2",
+        "flux2_klein_base_fp8",
         "face_detection", "face_recognition", "lcm_lora_sdxl",
         "instantid_ip_adapter", "instantid_controlnet", "cyberpunk_lora",
         "anime_lora", "ink_wash_lora", "oil_painting_lora",

@@ -27,8 +27,7 @@ def build_workflow(mode: str) -> dict:
         "1": node(
             "UNETLoader",
             unet_name=(
-                "flux-2-klein-base-4b-fp8.safetensors"
-                if standard else "flux-2-klein-4b-fp8.safetensors"
+                "flux-2-klein-4b-fp8.safetensors"
             ),
             weight_dtype="default",
         ),
@@ -50,14 +49,14 @@ def build_workflow(mode: str) -> dict:
         "10": node("KSamplerSelect", sampler_name="euler"),
         "11": node("VAEDecode", samples=["9", 0], vae=["3", 0]),
         "12": node("SaveImage", images=["14", 0], filename_prefix="aigc-photomaker/output"),
-        "13": node("Flux2Scheduler", steps=20 if standard else 4, width=1024, height=1024),
+        "13": node("Flux2Scheduler", steps=8 if standard else 4, width=1024, height=1024),
         "14": node("FluxSingleFaceOutputGuard", images=["11", 0], faceanalysis=["4", 0]),
         "15": node(
             "CFGGuider",
             model=["1", 0],
             positive=["20", 0],
             negative=["21", 0],
-            cfg=4.0 if standard else 1.0,
+            cfg=1.0,
         ),
         "16": node("FluxSingleFaceInputGuard", images=["18", 0], faceanalysis=["4", 0]),
         "17": node("RandomNoise", noise_seed=0),
@@ -81,7 +80,7 @@ def prepare_workflow(
         raise ValueError("INVALID_IMAGE_TYPE")
     graph = deepcopy(build_workflow(mode))
     graph["1"]["inputs"]["unet_name"] = (
-        settings.flux_base_unet_filename if mode == "standard" else settings.flux_turbo_unet_filename
+        settings.flux_standard_unet_filename if mode == "standard" else settings.flux_turbo_unet_filename
     )
     graph["2"]["inputs"]["clip_name"] = settings.flux_text_encoder_filename
     graph["3"]["inputs"]["vae_name"] = settings.flux_vae_filename

@@ -2,9 +2,9 @@
 
 ## 1. 当前路线
 
-`feature/flux` 默认使用 **FLUX.2 [klein] Base 4B FP8（Standard）与 Distilled 4B FP8（Turbo）**，身份与构图参考由原生 ReferenceLatent 提供。官方 SDXL Base + InstantID 保留为 `main` 的历史路线，本分支不再加载其权重。
+`feature/flux` 当前使用 **FLUX.2 [klein] Distilled 4B FP8（Standard 与 Turbo 共用）**，身份与构图参考由原生 ReferenceLatent 提供。官方 SDXL Base + InstantID 保留为 `main` 的历史路线，Base FP8 仅作可选回滚。
 
-- Standard：20 步、CFG 4.0、euler；
+- Standard：8 步、CFG 1.0、euler；
 - Turbo：4 步、CFG 1.0、euler；
 - 共用 Qwen3 文本编码器和 FLUX.2 VAE；
 - 第一版使用原生提示词风格，不使用 SDXL 风格 LoRA 或 SDXL LCM。
@@ -13,8 +13,8 @@
 
 ## 2. 各组件职责
 
-- **Base FP8**：Standard 的未蒸馏生成模型，偏质量和可调整性。
-- **Distilled FP8**：Turbo 的低步数模型，偏交互速度。FP8 用于控制单张 3090 的显存和加载成本，兼容性/画质须实测。
+- **Base FP8**：仅作可选回滚。实测 20 步采样约 44 秒、总执行约 51–69 秒，且质量未优于 Distilled，因此退出默认链。
+- **Distilled FP8**：Standard/Turbo 共用的低步数模型，Standard 以 8 步保留更多细化空间，Turbo 保持 4 步。FP8 用于控制单张 3090 的显存和加载成本，兼容性/画质须实测。
 - **Qwen3 4B 文本编码器**：编码风格提示词，不是 SDXL CLIP。
 - **FLUX.2 VAE**：负责参考图编码和生成潜图解码。
 - **ReferenceLatent**：将参考图的身份与构图信息接入正负条件，替代 InstantID 的独立身份模块。
@@ -40,12 +40,14 @@
 
 ## 5. 显存、时延与验收
 
-新增模型下载约 16.5GB。权重文件大小不能直接等同于显存峰值：还要计入文本编码、VAE、参考图条件、采样激活、CUDA 上下文、双 UNet 缓存和碎片。16–22GB 只能作为工程估算，真实值以 GPU 1 监控为准。
+当前默认新增模型下载约 12.8GB（Base 不再必需）。权重文件大小不能直接等同于显存峰值：还要计入文本编码、VAE、参考图条件、采样激活、CUDA 上下文、双 UNet 缓存和碎片。16–22GB 只能作为工程估算，真实值以 GPU 1 监控为准。
 
 - 保持物理 GPU 1、1024×1024、batch 1 和单活跃任务。
 - Standard/Turbo 不并行执行；交替模式用于测量权重切换，不替代单模式基准。
 - 记录首次加载、热态 P50/P95、峰值显存、OOM 和其他服务的影响；不得停止已有服务制造达标结果。
 - Standard 至少 20 个成功样本，Turbo 至少 10 个，另做双权重交替测试。
 - 四风格以同输入同 seed 配对，记录风格辨识度、身份、参考构图和输出人脸数量。未经报告证明，不宣称 FLUX.2 优于旧路线。
+
+Standard 改共用 Distilled 后，不再承担 Base/Distilled 双模型切换开销；其 8 步路线与 Turbo 4 步分开测量，不能把理论步数比例当作实测时延比例。
 
 **单 GPU 数量结论仍为一张 RTX 3090 支撑一个活跃生成任务。** 只有持续排队和真实服务目标无法满足时才讨论扩容；扩容前必须分别评估权重加载、CPU offload、网络、磁盘和其他 GPU 服务，不能仅靠增加 Worker 或停止已有服务解决。

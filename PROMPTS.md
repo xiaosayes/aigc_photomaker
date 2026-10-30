@@ -1,6 +1,6 @@
 # 六阶段独立执行 Prompt
 
-> **当前路线修订（feature/flux）**：当前分支已改为 FLUX.2 Base/Distilled FP8 + 原生 ReferenceLatent。下文涉及 PhotoMaker/InstantID 的内容均为历史阶段约束，不得用于覆盖当前 FLUX 工作流或合入 `main`；新的共同约束是保留 FLUX.2 UNET/Qwen/VAE、ReferenceLatent 和输入/输出单人脸守卫。
+> **当前路线修订（feature/flux）**：当前分支已改为 Standard/Turbo 共用 FLUX.2 Distilled FP8 + 原生 ReferenceLatent。下文涉及 PhotoMaker/InstantID 的内容均为历史阶段约束，不得用于覆盖当前 FLUX 工作流或合入 `main`；新的共同约束是保留 FLUX.2 UNET/Qwen/VAE、ReferenceLatent 和输入/输出单人脸守卫。
 
 以下六个代码块均可单独复制给执行代理，不依赖当前对话记忆。每个代理必须区分本地静态检查与服务器行为测试；所有安装、启动、下载、Conda、模型、API、GPU 和真实浏览器操作只在指定 Ubuntu 22.04 x86_64 服务器执行。报告只能记录实际输出，不得虚构结果。
 

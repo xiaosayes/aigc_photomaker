@@ -94,7 +94,7 @@ bash scripts/benchmark.sh --alternate-modes --runs 10 --base-seed 13000
 - [ ] 四种风格 × Standard/Turbo 使用相同输入和固定 seed 对照，样本清单可追溯；记录各模式 FP8 权重、revision/SHA256、采样参数和修改前后配对结果，不以单一 seed 代替多 seed 验证。
 - [ ] 至少两名评审独立查看原图/结果，盲评身份相似度、五官完整、手部/边缘伪影、风格符合、细节和 1024×1024 完整性。
 - [ ] Turbo 与 Standard 的退化如实记录；时延快不自动等于画质通过。
-- [ ] `feature/flux` 的 FLUX.2 Base/Distilled 与 `main` 的 SDXL + InstantID 分开做同输入同 seed 对照；后续权重、步数或 CFG 调整一次只改一个变量，且重新预热。
+- [ ] `feature/flux` 的 Standard/Turbo Distilled 与 `main` 的 SDXL + InstantID 分开做同输入同 seed 对照；后续权重、步数或 CFG 调整一次只改一个变量，且重新预热。
 - [ ] 不以预热图一张好结果代表整体质量；失败、缺脸、多脸和敏感样本处理有记录。
 
 | 样本集/评审 | 身份（ rubric 待确认 ） | 风格 | 伪影 | 结论/证据 |

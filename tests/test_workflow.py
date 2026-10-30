@@ -55,12 +55,12 @@ def assert_common_flux_chain(graph):
     assert all(node["class_type"] != "LoraLoaderModelOnly" for node in graph.values())
 
 
-def test_standard_uses_base_fp8_and_advanced_flux_sampling():
+def test_standard_uses_distilled_fp8_with_eight_steps_and_advanced_sampling():
     graph = build_workflow("standard")
     assert graph["1"]["class_type"] == "UNETLoader"
-    assert graph["1"]["inputs"]["unet_name"] == "flux-2-klein-base-4b-fp8.safetensors"
-    assert graph["13"]["inputs"]["steps"] == 20
-    assert graph["15"]["inputs"]["cfg"] == 4.0
+    assert graph["1"]["inputs"]["unet_name"] == "flux-2-klein-4b-fp8.safetensors"
+    assert graph["13"]["inputs"]["steps"] == 8
+    assert graph["15"]["inputs"]["cfg"] == 1.0
     assert graph["10"]["inputs"]["sampler_name"] == "euler"
     assert_common_flux_chain(graph)
 

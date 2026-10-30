@@ -544,12 +544,12 @@ def test_warmup_uses_production_steps_and_verifies_single_face_png(tmp_path, mon
     report = run_warmup(configured)
 
     assert fake.closed
-    assert [graph["13"]["inputs"]["steps"] for graph in fake.graphs] == [20, 4]
+    assert [graph["13"]["inputs"]["steps"] for graph in fake.graphs] == [8, 4]
     assert [graph["17"]["inputs"]["noise_seed"] for graph in fake.graphs] == [0, 0]
     assert all(graph["8"]["inputs"]["width"] == 1024 for graph in fake.graphs)
     assert all(graph["8"]["inputs"]["height"] == 1024 for graph in fake.graphs)
     assert fake.graphs[0]["11"]["class_type"] == "VAEDecode"
-    assert fake.graphs[0]["1"]["inputs"]["unet_name"] == "flux-2-klein-base-4b-fp8.safetensors"
+    assert fake.graphs[0]["1"]["inputs"]["unet_name"] == "flux-2-klein-4b-fp8.safetensors"
     assert fake.graphs[1]["1"]["inputs"]["unet_name"] == "flux-2-klein-4b-fp8.safetensors"
     assert fake.graphs[1]["10"]["class_type"] == "KSamplerSelect"
     assert all(graph["14"]["class_type"] == "FluxSingleFaceOutputGuard" for graph in fake.graphs)
@@ -560,7 +560,7 @@ def test_warmup_uses_production_steps_and_verifies_single_face_png(tmp_path, mon
     assert report["status"] == "succeeded"
     assert set(report["modes"]) == {"standard", "turbo"}
     assert {mode: values["steps"] for mode, values in report["modes"].items()} == {
-        "standard": 20,
+        "standard": 8,
         "turbo": 4,
     }
     persisted = json.loads(

@@ -1,6 +1,6 @@
 # 六阶段路线
 
-`feature/flux` 当前基线为 FLUX.2 Base/Distilled FP8 + 原生 ReferenceLatent，保留输入/输出单人脸守卫、1024×1024、物理 GPU 1 和单活跃任务。`main` 的 SDXL + InstantID 保持不变，后续阶段不得跨分支覆盖。历史 PhotoMaker/InstantID 描述仅用于追溯。所有阶段以 [DESIGN.md](DESIGN.md) 和 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) 为基线，先写测试，保留真实报告；静态检查不能替代服务器行为。任何未实测指标保持“待验收”。阶段顺序可因阻塞暂停，但不能用后续优化掩盖前阶段失败。
+`feature/flux` 当前基线为 Standard/Turbo 共用 FLUX.2 Distilled FP8 + 原生 ReferenceLatent，保留输入/输出单人脸守卫、1024×1024、物理 GPU 1 和单活跃任务。`main` 的 SDXL + InstantID 保持不变，后续阶段不得跨分支覆盖。历史 PhotoMaker/InstantID 描述仅用于追溯。所有阶段以 [DESIGN.md](DESIGN.md) 和 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) 为基线，先写测试，保留真实报告；静态检查不能替代服务器行为。任何未实测指标保持“待验收”。阶段顺序可因阻塞暂停，但不能用后续优化掩盖前阶段失败。
 
 ## 阶段 1：服务器基线与模型验收
 

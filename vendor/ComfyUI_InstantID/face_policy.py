@@ -56,11 +56,15 @@ class InstantIDSingleFaceOutputGuard(_SingleFaceGuard):
         return self._validate(images, faceanalysis, output=True)
 
 
+FluxSingleFaceInputGuard = InstantIDSingleFaceInputGuard
+FluxSingleFaceOutputGuard = InstantIDSingleFaceOutputGuard
+
+
 NODE_CLASS_MAPPINGS = {
     "InstantIDSingleFaceInputGuard": InstantIDSingleFaceInputGuard,
     "InstantIDSingleFaceOutputGuard": InstantIDSingleFaceOutputGuard,
-    "FluxSingleFaceInputGuard": InstantIDSingleFaceInputGuard,
-    "FluxSingleFaceOutputGuard": InstantIDSingleFaceOutputGuard,
+    "FluxSingleFaceInputGuard": FluxSingleFaceInputGuard,
+    "FluxSingleFaceOutputGuard": FluxSingleFaceOutputGuard,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {

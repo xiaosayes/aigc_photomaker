@@ -17,14 +17,6 @@ def test_manifest_has_verified_flux_defaults():
     assert all(len(model["sha256"]) == 64 and model["size"] > 0 for model in defaults.values())
 
     expected = {
-        "flux2_klein_base_fp8": (
-            "black-forest-labs/FLUX.2-klein-base-4b-fp8",
-            "103db268c10d4d3921101b46057671f9ac460da6",
-            "flux-2-klein-base-4b-fp8.safetensors",
-            4089498488,
-            "44bab3a86fe98b85d21dd2a4729ebdc3ae51fb8a39f76e457e18c724219e6840",
-            "diffusion_models/",
-        ),
         "flux2_klein_turbo_fp8": (
             "black-forest-labs/FLUX.2-klein-4b-fp8",
             "5b4408e59397a4a37ccb46afe426d8ed86379441",
@@ -58,6 +50,18 @@ def test_manifest_has_verified_flux_defaults():
         assert model["size"] == size
         assert model["sha256"] == sha256
         assert model["relative_path"].startswith(prefix)
+
+
+def test_base_fp8_is_optional_with_preserved_metadata():
+    models = {model["key"]: model for model in load_models()}
+    base = models["flux2_klein_base_fp8"]
+    assert base["required"] is False
+    assert base["repo"] == "black-forest-labs/FLUX.2-klein-base-4b-fp8"
+    assert base["revision"] == "103db268c10d4d3921101b46057671f9ac460da6"
+    assert base["filename"] == "flux-2-klein-base-4b-fp8.safetensors"
+    assert base["size"] == 4089498488
+    assert base["sha256"] == "44bab3a86fe98b85d21dd2a4729ebdc3ae51fb8a39f76e457e18c724219e6840"
+    assert base["relative_path"] == "diffusion_models/flux-2-klein-base-4b-fp8.safetensors"
 
 
 def test_sdxl_instantid_and_style_loras_are_optional_for_rollback():
